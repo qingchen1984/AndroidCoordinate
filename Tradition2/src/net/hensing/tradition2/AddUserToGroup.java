@@ -174,8 +174,7 @@ public class AddUserToGroup extends ActionBarActivity {
 		}
 
 		private void parser(String msg) {
-			
-			
+				
 			Scanner scanner = new Scanner(msg);
 			//scanner.useDelimiter("=");
 			if (scanner.findInLine("ADD_USER ") != null){
