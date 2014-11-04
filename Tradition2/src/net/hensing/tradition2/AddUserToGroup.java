@@ -116,8 +116,6 @@ public class AddUserToGroup extends ActionBarActivity {
 
 			send_message = "ADD_USER_TO_GROUP " + mGroup + " " + userToAdd;
 
-
-
 			//CREATE_GROUP GroupName CreatorsMail
 			new Thread(new ClientThread()).start();
 		}
