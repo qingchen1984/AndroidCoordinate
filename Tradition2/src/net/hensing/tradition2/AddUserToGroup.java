@@ -196,7 +196,6 @@ public class AddUserToGroup extends ActionBarActivity {
 			//Log.d("MyLog ", "message: " + message);
 
 		}
-		
 	}  
 	
 	Handler handler_add = new Handler() {
