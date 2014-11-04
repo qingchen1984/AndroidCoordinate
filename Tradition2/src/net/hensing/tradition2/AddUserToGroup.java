@@ -104,7 +104,6 @@ public class AddUserToGroup extends ActionBarActivity {
 		intent = new Intent(this, SelectGroup.class);
 
 		startActivity(intent);
-		
 	}
 	
 	public void addClick(View view) {
