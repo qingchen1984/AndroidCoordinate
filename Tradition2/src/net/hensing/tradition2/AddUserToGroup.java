@@ -171,7 +171,6 @@ public class AddUserToGroup extends ActionBarActivity {
 				e.printStackTrace();
 				print("ERROR No conn est...");
 			}
-
 		}
 
 		private void parser(String msg) {
