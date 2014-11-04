@@ -237,6 +237,18 @@ private void print(String string) {
 	
 }
 
+public void PictureClick(View view) {
+	Intent intent;
+	
+	intent = new Intent(this, TakeImage.class);
+
+	intent.putExtra(EXTRA_MESSAGE_USER, user);
+	intent.putExtra(EXTRA_MESSAGE_EVENT, eventID);
+	intent.putExtra(EXTRA_MESSAGE_GROUP, group);
+	startActivity(intent);
+}
+	
+
 public void startClick(View view) {
 	
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
