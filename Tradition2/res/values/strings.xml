@@ -26,5 +26,6 @@
     <string name="title_activity_event_data">EventData</string>
     <string name="title_activity_view_member">ViewMember</string>
     <string name="title_activity_map">MapActivity</string>
+    <string name="title_activity_take_image">TakeImage</string>
 
 </resources>

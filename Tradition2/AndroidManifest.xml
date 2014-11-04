@@ -35,47 +35,46 @@
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyCeZX08GSyv_LysREHYYP68FNzg-K49NVo" />
 
-    
         <activity
-            android:name="net.hensing.tradition2.ChatActivity"
+            android:name=".ChatActivity"
             android:label="@string/title_empty"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.LoginActivity"
+            android:name=".LoginActivity"
             android:label="@string/title_empty"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateVisible" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.WelcomeActivity"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".WelcomeActivity"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.SelectGroup"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".SelectGroup"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.SelectEvent"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".SelectEvent"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.SearchLocation"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".SearchLocation"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.CreateNewEvent"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".CreateNewEvent"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.StartPage"
-            android:screenOrientation="portrait"
-            android:label="@string/title_activity_start_page" >
+            android:name=".StartPage"
+            android:label="@string/title_activity_start_page"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -83,42 +82,46 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="net.hensing.tradition2.CreateOrLogin"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".CreateOrLogin"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.CreateUser"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".CreateUser"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.CreateNewGroup"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".CreateNewGroup"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.AddUserToGroup"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".AddUserToGroup"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.EventData"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".EventData"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
 
-        <service android:name="net.hensing.tradition2.LocationService" />
+        <service android:name=".LocationService" />
 
         <activity
-            android:name="net.hensing.tradition2.ViewMember"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".ViewMember"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name="net.hensing.tradition2.MapActivity"
-            android:screenOrientation="portrait"
-            android:label="@string/title_empty" >
+            android:name=".MapActivity"
+            android:label="@string/title_empty"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".TakeImage"
+            android:label="@string/title_activity_take_image" >
         </activity>
     </application>
 
