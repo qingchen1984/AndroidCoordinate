@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Coordinate</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Map</string>
+    <string name="hello">Connecting... \n </string>
+    <string name="send">Send</string>
+    <string name="message">Enter message</string>
+    <string name="akt_chat">Chat</string>
+    <string name="login">Login</string>
+    <string name="title_activity_welcome">Tradition!</string>
+    <string name="hi">Welcome!</string>
+    <string name="title_empty"></string>
+    <string name="title_activity_select_group">SelectGroup</string>
+    <string name="title_activity_select_event">SelectEvent</string>
+    <string name="title_activity_search_location">SearchLocation</string>
+    <string name="str_btn_find">Find</string>
+    <string name="hnt_et_location">Enter location</string>
+    <string name="title_activity_create_new_event">CreateNewEvent</string>
+    <string name="title_activity_start_page">Coordinate</string>
+    <string name="title_activity_create_or_login">CreateOrLogin</string>
+    <string name="title_activity_create_user">CreateUser</string>
+    <string name="title_activity_create_new_group">CreateNewGroup</string>
+    <string name="title_activity_add_user_to_group">AddUserToGroup</string>
+    <string name="title_activity_event_data">EventData</string>
+    <string name="title_activity_view_member">ViewMember</string>
+    <string name="title_activity_map">MapActivity</string>
+
+</resources>

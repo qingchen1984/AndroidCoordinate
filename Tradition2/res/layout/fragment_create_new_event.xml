@@ -1,0 +1,177 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="net.hensing.tradition2.CreateNewEvent$PlaceholderFragment" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="sans-serif-light"
+        android:text="Event details"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        
+         <Button
+            android:id="@+id/btnCalendar"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:text="Pick date"
+            android:onClick="calendarClick"
+            android:background="@drawable/button_shape"
+            android:textColor="#FFFFFF"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+         
+        <EditText
+            android:id="@+id/txtDate"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:fontFamily="sans-serif-light"
+            android:inputType="date"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+        
+
+                
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+      	<Button
+            android:id="@+id/btnTimePicker"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:text="Pick Time"
+            android:onClick="timeClick"
+            android:background="@drawable/button_shape"
+            android:textColor="#FFFFFF"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/txtTimeXXX"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:fontFamily="sans-serif-light"
+            android:inputType="time"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+        
+
+        
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+      	<Button
+            android:id="@+id/btnTimePickerBefore"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:text="Tracking start"
+            android:onClick="timeClickBefore"
+            android:background="@drawable/button_shape"
+            android:textColor="#FFFFFF"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/txtTimeBefore"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:fontFamily="sans-serif-light"
+            android:inputType="time"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+        
+
+        
+    </LinearLayout>
+
+<LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+		<Button
+            android:id="@+id/btnTimePickerUntil"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:text="Tracking end"
+            android:onClick="timeClickUntil"
+            android:background="@drawable/button_shape"
+            android:textColor="#FFFFFF"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />    
+<EditText
+            android:id="@+id/txtTimeUntil"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:fontFamily="sans-serif-light"
+            android:inputType="time"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+        
+      	
+        
+    </LinearLayout>
+<LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+      	<EditText
+            android:id="@+id/EventName"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:fontFamily="sans-serif-light"
+            android:inputType="text"
+            android:hint="Event name"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+        
+      	<Button
+            android:id="@+id/register"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:text="REGISTER"
+            android:onClick="registerClick"
+            android:background="@drawable/button_shape"
+            android:textColor="#FFFFFF"
+            android:padding="5dip"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+        
+    </LinearLayout>
+
+</LinearLayout>
