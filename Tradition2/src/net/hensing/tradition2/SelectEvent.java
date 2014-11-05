@@ -300,9 +300,39 @@ public class SelectEvent extends ActionBarActivity {
 		});
 
 		tableRow.addView(button);
+		
+		// View Group Imags
+				TableRow tableRowImages = new TableRow(this);
+				table.addView(tableRowImages);
+				Button buttonImages = new Button(this);
+				//button.setBackground(myBS);
+				buttonImages.setBackgroundResource(R.drawable.button_shape_config);
+				buttonImages.setTextColor(Color.parseColor("#FFFFFF"));
+
+				buttonImages.setText("View group images");
+				buttonImages.setOnClickListener(new View.OnClickListener(){
+
+					@Override
+					public void onClick(View v) {
+						groupImagesButtonClicked();
+					}
+
+				});
+
+				tableRowImages.addView(buttonImages);
 
 	}
 
+	protected void groupImagesButtonClicked() {
+
+		//Toast.makeText(this, "Event clicked", Toast.LENGTH_SHORT).show();
+
+		intent = new Intent(this, GroupImages.class);
+		intent.putExtra(EXTRA_MESSAGE_GROUP, group);
+
+		startActivity(intent);
+
+	}
 
 	protected void newEventButtonClicked() {
 

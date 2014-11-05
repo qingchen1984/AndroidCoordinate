@@ -27,5 +27,7 @@
     <string name="title_activity_view_member">ViewMember</string>
     <string name="title_activity_map">MapActivity</string>
     <string name="title_activity_take_image">TakeImage</string>
+    <string name="title_activity_group_images">GroupImages</string>
+    <string name="title_activity_enlarge">Enlarge</string>
 
 </resources>
