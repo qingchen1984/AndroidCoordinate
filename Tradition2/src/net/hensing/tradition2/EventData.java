@@ -15,7 +15,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
-import net.hensing.tradition2.AddUserToGroup.ClientThread;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -169,7 +168,7 @@ public class EventData extends ActionBarActivity {
 
 		private void parser(String msg) {
 			
-			
+			Log.d("qwerty", msg);
 			Scanner scanner = new Scanner(msg);
 			//scanner.useDelimiter("=");
 			if (scanner.findInLine("EVENT_DETAILS ") != null){	

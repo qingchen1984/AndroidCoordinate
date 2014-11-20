@@ -52,7 +52,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import android.os.Build;
 
-public class MapActivity extends Activity implements
+public class MapActivity extends ActionBarActivity implements
 GooglePlayServicesClient.ConnectionCallbacks,
 GooglePlayServicesClient.OnConnectionFailedListener,
 LocationListener, com.google.android.gms.location.LocationListener{

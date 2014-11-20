@@ -19,6 +19,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.telephony.TelephonyManager;
 import android.text.format.Time;
 import android.text.method.ScrollingMovementMethod;
@@ -27,6 +29,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ChatActivity extends Activity {
 
@@ -43,6 +46,11 @@ public class ChatActivity extends Activity {
 	private String group = "oregistreradGrupp";
 	String displayName = "notReady";
 	String send_message_for_display;
+	Handler ok = null;
+	Handler nok = null;
+	Handler loopHandler = null;
+	String response = "";
+	ServerDataProvider sdp;
 
 
 
@@ -131,7 +139,9 @@ public class ChatActivity extends Activity {
 		user = login_user;
 		group = login_group;
 		new Thread(new DisplayNameThread()).start();
-		new Thread(new ClientThread()).start(); 
+
+		createHandlers();
+		new Thread(new loopThread()).start();
 
 		// Activating the Buttons on the ui and related functionality
 
@@ -202,7 +212,7 @@ public class ChatActivity extends Activity {
 
 									if (line_from_server.contains("I am the Python Pi-Server")){clearScreen();clearChat();}
 									else{
-										print(line_from_server);
+										//print(line_from_server);
 									}
 								}
 
@@ -224,63 +234,15 @@ public class ChatActivity extends Activity {
 		});
 	}
 
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run() {
-			String send_to_server2;
-			send_to_server2 = "GET_CHAT " + group;
+	public void getChat(){
 
-			while(inDisplay){
+		String send_to_server2;
+		send_to_server2 = "GET_CHAT " + group;
+		sdp = new ServerDataProvider(send_to_server2,nok,ok);
+		Thread thread = new Thread(sdp);
+		thread.start();	
 
-
-
-				try {
-					InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-					socket2 = new Socket();
-					socket2.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-					isConnected = true;
-					PrintWriter out;
-					try {
-						out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket2.getOutputStream())),true);
-						out.println(send_to_server2);
-						out.flush();
-						//clearChat();
-
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket2.getInputStream()));
-					while(isConnected && socket2.isConnected()){
-						String line_from_server = buf_from_server.readLine();
-						if (line_from_server == null){break;}
-
-						if (line_from_server.contains("I am the Python Pi-Server")){clearScreen();}
-						else{
-							print(line_from_server);
-						}
-					}
-
-					//handler_add.sendEmptyMessage(0);
-				} catch (UnknownHostException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					print("ERROR No conn est...");
-				}
-				try {
-					Thread.sleep(10000);
-				} catch (InterruptedException ie) {
-					//Handle exception
-				}
-
-			}
-		}    	
-	}
+	}    	
 
 	class DisplayNameThread implements Runnable {
 		// thread to connect to socket and listen
@@ -349,4 +311,68 @@ public class ChatActivity extends Activity {
 		}
 
 	}  
+	public void createHandlers(){
+		ok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				response = sdp.getResponse();
+				Log.d("qwerty2","in ok handler");
+				chatUpdate(response);
+
+			}
+		};
+		nok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};   	
+		loopHandler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				getChat();
+			}
+		};
+
+	}
+	public void chatUpdate(String response2) {
+
+		Log.d("qwerty2",response2);
+
+		chat_area.setText(response2);
+		// below is for autoscroll if end of view is reached
+		final int scrollAmount = chat_area.getLayout().getLineTop(chat_area.getLineCount()) - chat_area.getHeight();
+		// if there is no need to scroll, scrollAmount will be <=0
+		if (scrollAmount > 0)
+			chat_area.scrollTo(0, scrollAmount);
+		else
+			chat_area.scrollTo(0, 0);
+		chat_area.invalidate();
+
+
+
+	}
+	public void showProblemMessage(){
+		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+	}
+
+	class loopThread implements Runnable {
+
+		public void run(){
+
+			while (true){
+
+				try {
+					Thread.sleep(10000);
+				} 
+				catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+
+				}
+				loopHandler.sendEmptyMessage(0);
+			}
+		}
+
+	}
 }
