@@ -73,13 +73,13 @@ public class ChatActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_chat);
 	}    
-	
+
 	@Override
 	protected void onPause() {
 		super.onPause();
 		inDisplay = false;
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -129,7 +129,7 @@ public class ChatActivity extends Activity {
 	}    	
 
 	public void getDisplayName(){
-		
+
 		String send_to_server2;
 		send_to_server2 = "GET_MY_DISPLAYNAME " + user;
 		displayNameSdp = new ServerDataProvider(send_to_server2,displayNameNok,displayNameOk);
@@ -138,7 +138,7 @@ public class ChatActivity extends Activity {
 	}
 
 	public void sendChatMessage(){
-		
+
 		EditText chatEdit   = (EditText)findViewById(R.id.myChat);
 		String send_message = chatEdit.getText().toString();
 		String send_to_server;
@@ -150,14 +150,14 @@ public class ChatActivity extends Activity {
 	}
 
 	public void createHandlers(){
-		
+
 		ok = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-				response = sdp.getResponse();
-				Log.d("qwerty2","in ok handler");
-				chatUpdate(response);
-
+				if(inDisplay){
+					response = sdp.getResponse();
+					chatUpdate(response);
+				}
 			}
 		};
 		nok = new Handler() {
@@ -169,14 +169,17 @@ public class ChatActivity extends Activity {
 		loopHandler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-				getChat();
+				if(inDisplay){
+					getChat();
+				}
 			}
 		};
 		displayNameOk = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-				displayNameParser(displayNameSdp.getResponse());
-				Log.d("qwerty3", "disp name in handle: "+displayNameSdp.getResponse());
+				if(inDisplay){
+					displayNameParser(displayNameSdp.getResponse());
+				}
 			}
 		};
 		displayNameNok = new Handler() {
@@ -188,11 +191,13 @@ public class ChatActivity extends Activity {
 		sendChatOk = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-				String sendChatResponse = sendChatSdp.getResponse();
-				chatUpdate(sendChatResponse);
-				clearChat();
-				Button connectButton = (Button) findViewById(R.id.button3);
-				connectButton.setEnabled(true);
+				if(inDisplay){
+					String sendChatResponse = sendChatSdp.getResponse();
+					chatUpdate(sendChatResponse);
+					clearChat();
+					Button connectButton = (Button) findViewById(R.id.button3);
+					connectButton.setEnabled(true);
+				}
 			}
 		};
 		sendChatNok = new Handler() {
@@ -212,8 +217,6 @@ public class ChatActivity extends Activity {
 			String word;
 			word = scanner.next();
 			displayName = word;
-
-			Log.d("qwerty3", "disp name in scanner: "+word);
 		}
 		scanner.close();
 	}
@@ -241,7 +244,7 @@ public class ChatActivity extends Activity {
 	class loopThread implements Runnable {
 
 		public void run(){
-			while (true){
+			while (inDisplay){
 				loopHandler.sendEmptyMessage(0);
 				try {
 					Thread.sleep(10000);
