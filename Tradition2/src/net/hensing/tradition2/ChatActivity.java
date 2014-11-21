@@ -1,6 +1,5 @@
 package net.hensing.tradition2;
 
-import java.net.Socket;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 import net.hensing.tradition2.R;
@@ -21,11 +20,6 @@ import android.widget.Toast;
 public class ChatActivity extends Activity {
 
 	boolean inDisplay;
-	private boolean isConnected = false;
-	private Socket socket, socket2;
-	private static final int SERVERPORT = 1234;
-	//private static final String SERVER_IP = "10.0.2.2";
-	private static final String SERVER_IP = "90.226.9.91";	
 	private TextView chat_area;
 	private EditText sendChat;
 	DecimalFormat dec = new DecimalFormat("0.0000");
@@ -45,9 +39,6 @@ public class ChatActivity extends Activity {
 	ServerDataProvider displayNameSdp;
 	ServerDataProvider sendChatSdp;
 
-
-
-
 	public String GetPhoneId(){
 		final String androidId;
 
@@ -61,30 +52,6 @@ public class ChatActivity extends Activity {
 		String returnString = nowTime.format("%H:%M:%S")+ " ";
 		return returnString;
 
-	}
-
-	// Print to chat screen function, same base code as in PingActivity.java
-	public void print(String message) {
-
-		//Log.d("App ", "message: " + message);
-		Time now = new Time();
-		now.setToNow();
-		String timeString = now.format("%H:%M:%S");
-		final String line = message + "\n";
-		//using .post function to send back to uiThread
-		chat_area.post(new Runnable() {
-			public void run() {
-				chat_area.setText(chat_area.getText() + line);
-				// below is for autoscroll if end of view is reached
-				final int scrollAmount = chat_area.getLayout().getLineTop(chat_area.getLineCount()) - chat_area.getHeight();
-				// if there is no need to scroll, scrollAmount will be <=0
-				if (scrollAmount > 0)
-					chat_area.scrollTo(0, scrollAmount);
-				else
-					chat_area.scrollTo(0, 0);
-				chat_area.invalidate();
-			}
-		});
 	}
 
 	// Clearing send message field 
@@ -105,14 +72,14 @@ public class ChatActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_chat);
-
-
 	}    
+	
 	@Override
 	protected void onPause() {
 		super.onPause();
 		inDisplay = false;
 	}
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -125,18 +92,12 @@ public class ChatActivity extends Activity {
 		final String login_group = intent.getStringExtra(MapActivity.EXTRA_MESSAGE_GROUP);
 		user = login_user;
 		group = login_group;
-
 		createHandlers();
 		getDisplayName();
 		new Thread(new loopThread()).start();
-
 		// Activating the Buttons on the ui and related functionality
-
 		activateSend();
-
 	}
-
-	
 
 	private void activateSend() {
 		// Activate Send Button
@@ -151,7 +112,6 @@ public class ChatActivity extends Activity {
 					// Create thread that take what is in Send and send over socket
 					sendChatMessage();
 					connectButton.setEnabled(false);
-
 				}
 				else{
 					Log.d("qwerty3", "disp name: "+displayName);
@@ -161,7 +121,6 @@ public class ChatActivity extends Activity {
 	}
 
 	public void getChat(){
-
 		String send_to_server2;
 		send_to_server2 = "GET_CHAT " + group;
 		sdp = new ServerDataProvider(send_to_server2,nok,ok);
@@ -170,7 +129,7 @@ public class ChatActivity extends Activity {
 	}    	
 
 	public void getDisplayName(){
-
+		
 		String send_to_server2;
 		send_to_server2 = "GET_MY_DISPLAYNAME " + user;
 		displayNameSdp = new ServerDataProvider(send_to_server2,displayNameNok,displayNameOk);
@@ -179,7 +138,7 @@ public class ChatActivity extends Activity {
 	}
 
 	public void sendChatMessage(){
-
+		
 		EditText chatEdit   = (EditText)findViewById(R.id.myChat);
 		String send_message = chatEdit.getText().toString();
 		String send_to_server;
@@ -191,6 +150,7 @@ public class ChatActivity extends Activity {
 	}
 
 	public void createHandlers(){
+		
 		ok = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
@@ -241,11 +201,9 @@ public class ChatActivity extends Activity {
 				showProblemMessage();
 			}
 		};
-
 	}
 
 	private void displayNameParser(String msg) {
-
 
 		Scanner scanner = new Scanner(msg);
 		//scanner.useDelimiter("=");
@@ -263,7 +221,6 @@ public class ChatActivity extends Activity {
 	public void chatUpdate(String response2) {
 
 		Log.d("qwerty2",response2);
-
 		chat_area.setText(response2);
 		// below is for autoscroll if end of view is reached
 		final int scrollAmount = chat_area.getLayout().getLineTop(chat_area.getLineCount()) - chat_area.getHeight();
@@ -284,20 +241,15 @@ public class ChatActivity extends Activity {
 	class loopThread implements Runnable {
 
 		public void run(){
-
 			while (true){
-				
 				loopHandler.sendEmptyMessage(0);
-
 				try {
 					Thread.sleep(10000);
 				} 
 				catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-
-				}
-				
+				}			
 			}
 		}
 
