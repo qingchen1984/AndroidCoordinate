@@ -1,27 +1,14 @@
 package net.hensing.tradition2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
-import java.util.UUID;
-
 import net.hensing.tradition2.R;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.telephony.TelephonyManager;
 import android.text.format.Time;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -49,8 +36,14 @@ public class ChatActivity extends Activity {
 	Handler ok = null;
 	Handler nok = null;
 	Handler loopHandler = null;
+	Handler displayNameOk = null;
+	Handler displayNameNok = null;
+	Handler sendChatOk = null;
+	Handler sendChatNok = null;
 	String response = "";
 	ServerDataProvider sdp;
+	ServerDataProvider displayNameSdp;
+	ServerDataProvider sendChatSdp;
 
 
 
@@ -96,22 +89,16 @@ public class ChatActivity extends Activity {
 
 	// Clearing send message field 
 	public void clearChat() {
-		sendChat.post(new Runnable() {
-			//using .post function to send back to uiThread
-			public void run() {
-				sendChat.setText("");
-				sendChat.invalidate();
-			}
-		});
+
+		sendChat.setText("");
+		sendChat.invalidate();
+
 	} 
 	public void clearScreen() {
-		chat_area.post(new Runnable() {
-			//using .post function to send back to uiThread
-			public void run() {
-				chat_area.setText("");
-				chat_area.invalidate();
-			}
-		});
+
+		chat_area.setText("");
+		chat_area.invalidate();
+
 	}
 	/** Called when the activity is first created. */
 	@Override
@@ -138,9 +125,9 @@ public class ChatActivity extends Activity {
 		final String login_group = intent.getStringExtra(MapActivity.EXTRA_MESSAGE_GROUP);
 		user = login_user;
 		group = login_group;
-		new Thread(new DisplayNameThread()).start();
 
 		createHandlers();
+		getDisplayName();
 		new Thread(new loopThread()).start();
 
 		// Activating the Buttons on the ui and related functionality
@@ -149,25 +136,7 @@ public class ChatActivity extends Activity {
 
 	}
 
-	private void startMessage(){
-
-		String send_to_server = "GET_CHAT "+group;
-		PrintWriter out;
-
-		try {
-			out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-			out.println(send_to_server);
-			out.flush();
-			clearChat();
-
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-
-	}
+	
 
 	private void activateSend() {
 		// Activate Send Button
@@ -180,55 +149,12 @@ public class ChatActivity extends Activity {
 				// TODO Auto-generated method
 				if (displayName!="notReady"){
 					// Create thread that take what is in Send and send over socket
-					new Thread(new Runnable(){
+					sendChatMessage();
+					connectButton.setEnabled(false);
 
-						public void run() {
-							// TODO Auto-generated method stub
-							String send_message = chatEdit.getText().toString();
-							String send_to_server;
-							send_to_server = "SEND_TO_CHAT " + group + " STARTMSG"
-									+ "" + getTime() + displayName + ": " + send_message;
-							try {
-								InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-								socket = new Socket();
-								socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-								isConnected = true;
-								PrintWriter out;
-								try {
-									out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-									out.println(send_to_server);
-									out.flush();
-									//clearChat();
-
-								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-
-								BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-								while(isConnected && socket.isConnected()){
-									String line_from_server = buf_from_server.readLine();
-									if (line_from_server == null){break;}
-
-									if (line_from_server.contains("I am the Python Pi-Server")){clearScreen();clearChat();}
-									else{
-										//print(line_from_server);
-									}
-								}
-
-								//handler_add.sendEmptyMessage(0);
-							} catch (UnknownHostException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								print("ERROR No conn est...");
-							}
-						}
-
-
-					}).start();
+				}
+				else{
+					Log.d("qwerty3", "disp name: "+displayName);
 				}
 			}
 		});
@@ -241,76 +167,29 @@ public class ChatActivity extends Activity {
 		sdp = new ServerDataProvider(send_to_server2,nok,ok);
 		Thread thread = new Thread(sdp);
 		thread.start();	
-
 	}    	
 
-	class DisplayNameThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				send_message_for_display = "GET_MY_DISPLAYNAME " + user;
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
+	public void getDisplayName(){
 
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message_for_display);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message_for_display);
+		String send_to_server2;
+		send_to_server2 = "GET_MY_DISPLAYNAME " + user;
+		displayNameSdp = new ServerDataProvider(send_to_server2,displayNameNok,displayNameOk);
+		Thread thread = new Thread(displayNameSdp);
+		thread.start();		
+	}
 
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+	public void sendChatMessage(){
 
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
+		EditText chatEdit   = (EditText)findViewById(R.id.myChat);
+		String send_message = chatEdit.getText().toString();
+		String send_to_server;
+		send_to_server = "SEND_TO_CHAT " + group + " STARTMSG"
+				+ "" + getTime() + displayName + ": " + send_message;
+		sendChatSdp = new ServerDataProvider(send_to_server,sendChatNok,sendChatOk);
+		Thread thread = new Thread(sendChatSdp);
+		thread.start();		
+	}
 
-					print(line_from_server);
-					parser2(line_from_server);
-				}
-
-				//handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
-			}
-
-		}
-
-		private void parser2(String msg) {
-
-
-			Scanner scanner = new Scanner(msg);
-			//scanner.useDelimiter("=");
-			if (scanner.findInLine("DISPLAYNAME ") != null){
-
-				String word;
-				word = scanner.next();
-				displayName = word;
-			}
-			scanner.close();
-		}
-		public void print(String message) {
-
-			//Log.d("MyLog ", "message: " + message);
-
-		}
-
-	}  
 	public void createHandlers(){
 		ok = new Handler() {
 			@Override
@@ -333,8 +212,54 @@ public class ChatActivity extends Activity {
 				getChat();
 			}
 		};
+		displayNameOk = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				displayNameParser(displayNameSdp.getResponse());
+				Log.d("qwerty3", "disp name in handle: "+displayNameSdp.getResponse());
+			}
+		};
+		displayNameNok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};
+		sendChatOk = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				String sendChatResponse = sendChatSdp.getResponse();
+				chatUpdate(sendChatResponse);
+				clearChat();
+				Button connectButton = (Button) findViewById(R.id.button3);
+				connectButton.setEnabled(true);
+			}
+		};
+		sendChatNok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};
 
 	}
+
+	private void displayNameParser(String msg) {
+
+
+		Scanner scanner = new Scanner(msg);
+		//scanner.useDelimiter("=");
+		if (scanner.findInLine("DISPLAYNAME ") != null){
+
+			String word;
+			word = scanner.next();
+			displayName = word;
+
+			Log.d("qwerty3", "disp name in scanner: "+word);
+		}
+		scanner.close();
+	}
+
 	public void chatUpdate(String response2) {
 
 		Log.d("qwerty2",response2);
@@ -361,6 +286,8 @@ public class ChatActivity extends Activity {
 		public void run(){
 
 			while (true){
+				
+				loopHandler.sendEmptyMessage(0);
 
 				try {
 					Thread.sleep(10000);
@@ -370,7 +297,7 @@ public class ChatActivity extends Activity {
 					e.printStackTrace();
 
 				}
-				loopHandler.sendEmptyMessage(0);
+				
 			}
 		}
 

@@ -12,6 +12,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.http.entity.StringEntity;
+
 import android.os.Handler;
 import android.util.Log;
 
@@ -58,10 +60,16 @@ public class ServerDataProvider implements Runnable {
 			conn.setRequestMethod("POST");
 
 			conn.setRequestProperty("Connection", "Keep-Alive");
+			conn.setRequestProperty("Connection", "charset=UTF-8");
+			
 
 			DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+			
+			String body = paramName1+"="+paramValue1;
 
-			dos.writeBytes(paramName1+"="+paramValue1);
+			//dos.write(body.getBytes("UTF-8"));
+			
+			dos.writeBytes(body);
 
 			dos.flush();
 			dos.close();
@@ -141,7 +149,7 @@ public class ServerDataProvider implements Runnable {
 		bytesToRead = bs.toByteArray();
 
 		String responseFromServer = new String(bytesToRead, "UTF-8");
-		return responseFromServer;
+		return responseFromServer.trim();
 	}
 	
 	
