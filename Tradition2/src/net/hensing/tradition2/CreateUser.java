@@ -59,98 +59,16 @@ public class CreateUser extends ActionBarActivity {
 	public static final String EXTRA_MESSAGE_NEW_USER = "net.hensing.tradition2.MESSAGE_NEW_USER";
 	public static final String EXTRA_MESSAGE_PASSWORD = "net.hensing.tradition2.MESSAGE_PASSWORD";
 
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
+
 	public void print(String message) {
 
 		//Log.d("MyLog ", "message: " + message);
 
 	}
-
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
-				send_message = "CREATE_NEW_USER " + user + " " + DisplayName + " " + Password;
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message);
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
-
-					print(line_from_server);
-					parser(line_from_server);
-				}
-
-				//handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
-			}
-
-		}
-
-		private void parser(String msg) {
-
-
-			Scanner scanner = new Scanner(msg);
-			//scanner.useDelimiter("=");
-			if (scanner.findInLine("CREATE_USER ") != null){
-
-				String word;
-				word = scanner.next();
-				if (word.equals("OK")){
-					handler_add.sendEmptyMessage(0);	
-				}
-				else {
-					handler_remove.sendEmptyMessage(0);	
-				}
-
-
-			}
-		}  
-	}
-	Handler handler_add = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			loginSuccess();
-		}
-	};
-	Handler handler_remove = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-
-
-			Context context = getApplicationContext();
-			CharSequence text = "Create user failed";
-			int duration = Toast.LENGTH_LONG;
-
-			Toast toast = Toast.makeText(context, text, duration);
-			toast.show();
-		}
-	};		
-
 
 	public void create_user(View view) {
 
@@ -162,13 +80,19 @@ public class CreateUser extends ActionBarActivity {
 		DisplayName = editTextDisplayName.getText().toString();
 
 		if (!Password.equals("") && !user.equals("") && !DisplayName.equals("")){
-			
+
 			if (!Password.contains(" ") && !user.contains(" ") && !DisplayName.contains(" ")){
 
 
 				if (user.contains("@") && user.contains(".")){
 
-					new Thread(new ClientThread()).start();
+					send_message = "CREATE_NEW_USER " + user + " " + DisplayName + " " + Password;
+
+					sdp = new ServerDataProvider(send_message,nok,ok);
+					Thread thread = new Thread(sdp);
+					thread.start();	
+
+
 				}
 				else {
 
@@ -216,36 +140,15 @@ public class CreateUser extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_user);
+		
+		createHandlers();
 
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
 		}
 	}
-/*
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
 
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.create_user, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-*/
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
 	public static class PlaceholderFragment extends Fragment {
 
 		public PlaceholderFragment() {
@@ -259,5 +162,52 @@ public class CreateUser extends ActionBarActivity {
 			return rootView;
 		}
 	}
+
+	public void createHandlers(){
+		ok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				response = sdp.getResponse();
+				parser(response);
+
+			}
+		};
+		nok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};   	
+
+	}
+
+	public void showProblemMessage(){
+		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+	}	
+
+	private void parser(String msg) {
+
+
+		Scanner scanner = new Scanner(msg);
+		//scanner.useDelimiter("=");
+		if (scanner.findInLine("CREATE_USER ") != null){
+
+			String word;
+			word = scanner.next();
+			if (word.equals("OK")){
+				loginSuccess();	
+			}
+			else {
+				CharSequence text = "Create user failed";
+				int duration = Toast.LENGTH_LONG;
+
+				Toast toast = Toast.makeText(this, text, duration);
+				toast.show();
+			}
+
+
+		}
+	}
+
 
 }

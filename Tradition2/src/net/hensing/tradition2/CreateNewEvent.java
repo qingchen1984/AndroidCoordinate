@@ -1,33 +1,17 @@
 package net.hensing.tradition2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Scanner;
 
-import net.hensing.tradition2.WelcomeActivity.ClientThread;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,7 +22,6 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
-import android.os.Build;
 
 public class CreateNewEvent extends ActionBarActivity {
 
@@ -51,13 +34,14 @@ public class CreateNewEvent extends ActionBarActivity {
 	Intent intent, intent2;
 	String group;
 	String Password;
-	private boolean isConnected = false;
-	private Socket socket;
-	private static final int SERVERPORT = 1234;
-	//private static final String SERVER_IP = "10.0.2.2";
-	private static final String SERVER_IP = "90.226.9.91";	
+
 	DecimalFormat dec = new DecimalFormat("0.0000");
 	private String send_message;
+
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
 
 	// Variable for storing current date and time
 	private int mYear, mMonth, mDay, mHour, mMinute;
@@ -80,13 +64,7 @@ public class CreateNewEvent extends ActionBarActivity {
 		lng = temp_lng;
 		group = temp_group;
 
-		//Toast.makeText(getApplicationContext(),
-		//		lat+lng+group, Toast.LENGTH_LONG)
-		//		.show();
-		//txtTime = (EditText) findViewById(R.id.txtTime);
-
-		//btnCalendar.setOnClickListener(this);
-		//btnTimePicker.setOnClickListener(this);
+		createHandlers();
 
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
@@ -248,12 +226,15 @@ public class CreateNewEvent extends ActionBarActivity {
 			startTime = SmDate+" "+SmTimeB;
 			endTime = SmDate+" "+SmTimeU;
 
-			
+
 			if (!eventName.equals("") && !eventName.contains(" ")){
 
 				send_message = "CREATE_EVENT "+eventTime + " " +startTime+ " " +endTime+ " " +lat+ " " +lng+ " " + eventName + " " + group;
 
-				new Thread(new ClientThread()).start();
+				sdp = new ServerDataProvider(send_message,nok,ok);
+				Thread thread = new Thread(sdp);
+				thread.start();	
+
 
 			}
 			else {
@@ -262,8 +243,8 @@ public class CreateNewEvent extends ActionBarActivity {
 						"Invalid Name", Toast.LENGTH_LONG)
 						.show();
 			}
-			
-		
+
+
 		}
 		else {
 
@@ -279,95 +260,35 @@ public class CreateNewEvent extends ActionBarActivity {
 
 	}
 
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
 
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message);
 
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+	private void parser(String msg) {
 
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
 
-					print(line_from_server);
-					parser(line_from_server);
-				}
+		Scanner scanner = new Scanner(msg);
+		//scanner.useDelimiter("=");
+		if (scanner.findInLine("EVENT ") != null){
 
-				//handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
+			String word;
+			word = scanner.next();
+			if (word.equals("OK")){
+				eventSuccess();
 			}
+			else {
+				CharSequence text = "Invalid creation!";
+				int duration = Toast.LENGTH_SHORT;
+				Toast toast = Toast.makeText(this, text, duration);
+				toast.show();
 
-		}
 
-		private void parser(String msg) {
-			
-			
-			Scanner scanner = new Scanner(msg);
-			//scanner.useDelimiter("=");
-			if (scanner.findInLine("EVENT ") != null){
-				
-				String word;
-				word = scanner.next();
-				if (word.equals("OK")){
-					handler_add.sendEmptyMessage(0);	
-				}
-				else {
-					handler_remove.sendEmptyMessage(0);	
-				}
-
-				
 			}
 		}
-	}  
-
-	Handler handler_add = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			eventSuccess();
-		}
-	};
-	Handler handler_remove = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
+	}
 
 
-			Context context = getApplicationContext();
-			CharSequence text = "Invalid creation!";
-			int duration = Toast.LENGTH_SHORT;
-
-			Toast toast = Toast.makeText(context, text, duration);
-			toast.show();
-		}
-	};	
 	private void eventSuccess() {
-		
-		Toast.makeText(getApplicationContext(),
+
+		Toast.makeText(this,
 				"Event created!", Toast.LENGTH_LONG)
 				.show();
 		intent = new Intent(this, SelectGroup.class);
@@ -375,4 +296,27 @@ public class CreateNewEvent extends ActionBarActivity {
 		startActivity(intent);
 
 	}
+
+	public void createHandlers(){
+		ok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				response = sdp.getResponse();
+				parser(response);
+
+			}
+		};
+		nok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};   	
+
+	}
+
+	public void showProblemMessage(){
+		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+	}	
+
 }

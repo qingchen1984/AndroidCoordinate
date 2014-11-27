@@ -106,6 +106,10 @@ public class AddUserToGroup extends ActionBarActivity {
 		};   	
 
 	}
+	
+	public void showProblemMessage(){
+		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+	}	
 
 	public void toGroups(View view){
 		intent = new Intent(this, SelectGroup.class);
@@ -180,8 +184,6 @@ public class AddUserToGroup extends ActionBarActivity {
 
 	}
 
-	public void showProblemMessage(){
-		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
-	}
+
 
 }
