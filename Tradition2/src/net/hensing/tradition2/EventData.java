@@ -1,24 +1,12 @@
 package net.hensing.tradition2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,10 +17,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.os.Build;
 
 public class EventData extends ActionBarActivity {
 
@@ -53,11 +39,13 @@ public class EventData extends ActionBarActivity {
 	
 	
 
-	private boolean isConnected = false;
-	private Socket socket;
-	private static final int SERVERPORT = 1234;
-	private static final String SERVER_IP = "90.226.9.91";	
-	private String send_message, userToAdd;
+
+	private String send_message;
+	
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
 	
 	
 	@Override
@@ -73,7 +61,11 @@ public class EventData extends ActionBarActivity {
 		user = login_user;
 		eventID = login_event;
 		
-		new Thread(new ClientThread()).start();
+		createHandlers();
+		send_message = "GET_EVENT_DETAILS " + eventID;
+		sdp = new ServerDataProvider(send_message,nok,ok);
+		Thread thread = new Thread(sdp);
+		thread.start();	
 		
 
 		if (savedInstanceState == null) {
@@ -119,100 +111,7 @@ public class EventData extends ActionBarActivity {
 		}
 	}
 	
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				send_message = "GET_EVENT_DETAILS " + eventID;
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
 
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message);
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
-
-					print(line_from_server);
-					parser(line_from_server);
-				}
-
-				//handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
-			}
-
-		}
-
-		private void parser(String msg) {
-			
-			Log.d("qwerty", msg);
-			Scanner scanner = new Scanner(msg);
-			//scanner.useDelimiter("=");
-			if (scanner.findInLine("EVENT_DETAILS ") != null){	
-				
-				eventName = scanner.next();
-				eventDate = scanner.next();
-				eventTime = scanner.next();
-				
-				trackingStartDate = scanner.next();
-				trackingStartTime = scanner.next();
-				trackingEndDate = scanner.next();
-				trackingEndTime = scanner.next();
-				
-				handler_add.sendEmptyMessage(0);	
-				
-			}
-		}
-		public void print(String message) {
-
-			//Log.d("MyLog ", "message: " + message);
-
-		}
-		
-	}  
-	
-	Handler handler_add = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			addSuccess();
-		}
-	};
-	Handler handler_remove = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-
-
-			Context context = getApplicationContext();
-			CharSequence text = "Invalid creation!";
-			int duration = Toast.LENGTH_SHORT;
-
-			Toast toast = Toast.makeText(context, text, duration);
-			toast.show();
-		}
-	};	
 	
 private void addSuccess() {
 		
@@ -283,16 +182,52 @@ public void startClick(View view) {
 		Toast.makeText(this, "Event not ongoing", Toast.LENGTH_SHORT).show();
 	}
 	
-	
-	
-	/*
-	Toast.makeText(this, "Event clicked", Toast.LENGTH_SHORT).show();
-	
-	intent = new Intent(this, SearchLocation.class);
-	intent.putExtra(EXTRA_MESSAGE_GROUP, group);
-	
-	startActivity(intent);
-	*/
+
 }
+
+public void createHandlers(){
+	ok = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			response = sdp.getResponse();
+			parser(response);
+
+		}
+	};
+	nok = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			showProblemMessage();
+		}
+	};   	
+
+}
+
+public void showProblemMessage(){
+	Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+}	
+
+private void parser(String msg) {
+
+
+	Log.d("qwerty", msg);
+	Scanner scanner = new Scanner(msg);
+	//scanner.useDelimiter("=");
+	if (scanner.findInLine("EVENT_DETAILS ") != null){	
+		
+		eventName = scanner.next();
+		eventDate = scanner.next();
+		eventTime = scanner.next();
+		
+		trackingStartDate = scanner.next();
+		trackingStartTime = scanner.next();
+		trackingEndDate = scanner.next();
+		trackingEndTime = scanner.next();
+		
+		addSuccess();	
+		
+	}
+}
+
 
 }

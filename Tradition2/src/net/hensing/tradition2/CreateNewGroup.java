@@ -1,20 +1,9 @@
 package net.hensing.tradition2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,13 +20,14 @@ public class CreateNewGroup extends ActionBarActivity {
 
 	Intent intent;
 	String group,mMail;
-
-	private boolean isConnected = false;
-	private Socket socket;
-	private static final int SERVERPORT = 1234;
-	private static final String SERVER_IP = "90.226.9.91";	
 	private String send_message, newGroupName;
 	public static final String EXTRA_MESSAGE_GROUP = "net.hensing.tradition2.MESSAGE_GROUP";
+	
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +39,8 @@ public class CreateNewGroup extends ActionBarActivity {
 
 		final String temp_mail = intent.getStringExtra(SelectGroup.EXTRA_MESSAGE_USER);
 		mMail = temp_mail;
+		
+		createHandlers();
 
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
@@ -103,10 +95,10 @@ public class CreateNewGroup extends ActionBarActivity {
 
 			send_message = "CREATE_GROUP " + newGroupName + " " + mMail;
 
-
-
 			//CREATE_GROUP GroupName CreatorsMail
-			new Thread(new ClientThread()).start();
+			sdp = new ServerDataProvider(send_message,nok,ok);
+			Thread thread = new Thread(sdp);
+			thread.start();	
 		}
 		else {
 
@@ -116,98 +108,7 @@ public class CreateNewGroup extends ActionBarActivity {
 
 		}
 	}
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
 
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message);
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
-
-					print(line_from_server);
-					parser(line_from_server);
-				}
-
-				//handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
-			}
-
-		}
-
-		private void parser(String msg) {
-			
-			
-			Scanner scanner = new Scanner(msg);
-			//scanner.useDelimiter("=");
-			if (scanner.findInLine("CREATE_GROUP ") != null){
-				
-				String word;
-				word = scanner.next();
-				if (word.equals("OK")){
-					handler_add.sendEmptyMessage(0);	
-				}
-				else {
-					handler_remove.sendEmptyMessage(0);	
-				}
-
-				
-			}
-		}
-		public void print(String message) {
-
-			//Log.d("MyLog ", "message: " + message);
-
-		}
-		
-	}  
-	
-	Handler handler_add = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			groupSuccess();
-		}
-	};
-	Handler handler_remove = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-
-
-			Context context = getApplicationContext();
-			CharSequence text = "Invalid creation!";
-			int duration = Toast.LENGTH_SHORT;
-
-			Toast toast = Toast.makeText(context, text, duration);
-			toast.show();
-		}
-	};	
 	
 private void groupSuccess() {
 		
@@ -223,9 +124,49 @@ private void groupSuccess() {
 
 	}
 
-private void print(String string) {
-	// TODO Auto-generated method stub
-	
+public void createHandlers(){
+	ok = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			response = sdp.getResponse();
+			parser(response);
+
+		}
+	};
+	nok = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			showProblemMessage();
+		}
+	};   	
+
+}
+
+public void showProblemMessage(){
+	Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+}	
+
+private void parser(String msg) {
+
+
+	Scanner scanner = new Scanner(msg);
+	//scanner.useDelimiter("=");
+	if (scanner.findInLine("CREATE_GROUP ") != null){
+
+		String word;
+		word = scanner.next();
+		if (word.equals("OK")){
+			groupSuccess();
+		}
+		else {
+			CharSequence text = "Invalid creation!";
+			int duration = Toast.LENGTH_SHORT;
+			Toast toast = Toast.makeText(this, text, duration);
+			toast.show();
+
+
+		}
+	}
 }
 
 }

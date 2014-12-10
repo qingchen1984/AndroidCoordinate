@@ -15,6 +15,7 @@ import java.net.URL;
 import org.apache.http.entity.StringEntity;
 
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 public class ServerDataProvider implements Runnable {
@@ -113,7 +114,11 @@ public class ServerDataProvider implements Runnable {
 		else{
 			
 			Log.d("qwerty","calling handler success ");
-			handler_upload_success.sendEmptyMessage(0);
+			
+			Message message = handler_upload_success.obtainMessage();
+			message.obj = responseString;
+			
+			handler_upload_success.sendMessage(message);
 		}
 	}
 	

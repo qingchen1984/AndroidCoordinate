@@ -1,15 +1,5 @@
  package net.hensing.tradition2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
@@ -22,10 +12,11 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 public class LocationService extends Service 
 implements
@@ -35,12 +26,7 @@ LocationListener, com.google.android.gms.location.LocationListener
 {
 	
 
-	private boolean isConnected = false;
-	private boolean zoomedToEvent = false;
-	private Socket socket;
-	private static final int SERVERPORT = 1234;
-	//private static final String SERVER_IP = "10.0.2.2";
-	private static final String SERVER_IP = "90.226.9.91";	
+	
 	DecimalFormat dec = new DecimalFormat("0.0000");
 
 	private String send_message;
@@ -69,7 +55,7 @@ LocationListener, com.google.android.gms.location.LocationListener
 	// Milliseconds per second
 	private static final int MILLISECONDS_PER_SECOND = 1000;
 	// Update frequency in seconds
-	public static final int UPDATE_INTERVAL_IN_SECONDS = 60;
+	public static final int UPDATE_INTERVAL_IN_SECONDS = 20;
 	// Update frequency in milliseconds
 	private static final long UPDATE_INTERVAL =
 			MILLISECONDS_PER_SECOND * UPDATE_INTERVAL_IN_SECONDS;
@@ -85,6 +71,12 @@ LocationListener, com.google.android.gms.location.LocationListener
 	int mStartMode;       // indicates how to behave if the service is killed
     IBinder mBinder;      // interface for clients that bind
     boolean mAllowRebind; // indicates whether onRebind should be used
+    
+    // Get data variables needed.
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
 
     @Override
     public void onCreate() {
@@ -104,6 +96,8 @@ LocationListener, com.google.android.gms.location.LocationListener
 		mLocationRequest.setInterval(UPDATE_INTERVAL);
 		// Set the fastest update interval to 1 second
 		mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+		
+		createHandlers();
 
     	
     	
@@ -232,54 +226,31 @@ LocationListener, com.google.android.gms.location.LocationListener
 		String stringLong = String.valueOf(longitude);
 		
 		send_message = "UPDATE_MY_POSITION " +user +" " +stringLat +" " +stringLong;  
-		//send_message = (user+" long "+dec.format(longitude)+" lat "+dec.format(latitude)+" ID "+GetPhoneId() + " GROUP " + group);
-
-		new Thread(new ClientThread()).start();
+		
+		sdp = new ServerDataProvider(send_message,nok,ok);
+		Thread thread = new Thread(sdp);
+		thread.start();	
 	}
 	
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message);
+	
+	
 
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+public void createHandlers(){
+	ok = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			response = sdp.getResponse();
+			//Log.d("MyLogEXTRA",response);
 
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
-					//parser(line_from_server);
-					print(line_from_server);
-				}
+		}
+	};
+	nok = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
 
-				//handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
-			}
+		}
+	};   	
 
-		}  
-	}
+}
 }
 

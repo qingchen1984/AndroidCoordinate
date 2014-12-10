@@ -1,37 +1,20 @@
 package net.hensing.tradition2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
-import net.hensing.tradition2.WelcomeActivity.ClientThread;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.os.Build;
 import android.preference.PreferenceManager;
 
 public class CreateUser extends ActionBarActivity {
@@ -47,11 +30,7 @@ public class CreateUser extends ActionBarActivity {
 	String is_new_user;
 	String Password;
 	String DisplayName;
-	private boolean isConnected = false;
-	private Socket socket;
-	private static final int SERVERPORT = 1234;
-	//private static final String SERVER_IP = "10.0.2.2";
-	private static final String SERVER_IP = "90.226.9.91";	
+
 	DecimalFormat dec = new DecimalFormat("0.0000");
 	private String send_message;
 

@@ -1,15 +1,5 @@
 package net.hensing.tradition2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +19,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -43,14 +30,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
-import android.os.Build;
 
 public class MapActivity extends ActionBarActivity implements
 GooglePlayServicesClient.ConnectionCallbacks,
@@ -58,12 +41,7 @@ GooglePlayServicesClient.OnConnectionFailedListener,
 LocationListener, com.google.android.gms.location.LocationListener{
 
 
-	private boolean isConnected = false;
 	private boolean zoomedToEvent = false;
-	private Socket socket;
-	private static final int SERVERPORT = 1234;
-	//private static final String SERVER_IP = "10.0.2.2";
-	private static final String SERVER_IP = "90.226.9.91";	
 	DecimalFormat dec = new DecimalFormat("0.0000");
 
 
@@ -80,6 +58,13 @@ LocationListener, com.google.android.gms.location.LocationListener{
 	public static final String EXTRA_MESSAGE_GROUP = "net.hensing.tradition2.MESSAGE_GROUP";
 	String eventID;
 	String event;
+
+	//Server data variables needed.
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
+
 
 
 	// Google Map
@@ -135,55 +120,13 @@ LocationListener, com.google.android.gms.location.LocationListener{
 			//m = googleMap.addMarker(mark);
 		}
 	}
-	
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message);
 
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
-					parser(line_from_server);
-					print(line_from_server);
-				}
-
-				handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
-			}
-
-		}  
-	}
 
 	public void parser(String message) {
-		//message = "StartMsg 2 namn=simon lat=1 long=1 namn=Pontus lat=2 long=2";
-		//use a second Scanner to parse the content of each line 
+		
+		Log.d("qwerty","in parser: "+message);
+		
 		Scanner scanner = new Scanner(message);
 		//scanner.useDelimiter("=");
 		if (scanner.findInLine("POSITIONS ") != null){
@@ -217,17 +160,18 @@ LocationListener, com.google.android.gms.location.LocationListener{
 				Double lonDouble = Double.parseDouble(lon); 
 				//temp = scanner.findInLine("id=");
 				//id = scanner.next();
-				
+
 				if (i == 1 && !zoomedToEvent){
 					latitude_event = Double.parseDouble(lat);
 					longitude_event = Double.parseDouble(lon);
-					handler_zoom.sendEmptyMessage(0);
+					zoom();
 					zoomedToEvent = true;
 				}
 
 				userList.add(new Member(name, latDouble, lonDouble));
 			}
 		}
+		scanner.close();
 	}
 
 	public void print(String message) {
@@ -244,8 +188,8 @@ LocationListener, com.google.android.gms.location.LocationListener{
 		return androidId;
 
 	}
-	
-	
+
+
 	public void get_last_location_and_use_once(){
 		double[] gps = new double[2];
 		gps = getGPS();
@@ -278,15 +222,17 @@ LocationListener, com.google.android.gms.location.LocationListener{
 	}
 
 	public void whenConnected(){
-		
+
 		// FORMAT: "UPDATE_POSITION mail lat long eventID"
 		String stringLat = String.valueOf(latitude);
 		String stringLong = String.valueOf(longitude);
-		
+
 		send_message = "UPDATE_POSITION " +user +" " +stringLat +" " +stringLong +" " + eventID;  
 		//send_message = (user+" long "+dec.format(longitude)+" lat "+dec.format(latitude)+" ID "+GetPhoneId() + " GROUP " + group);
 		clearUserList();
-		new Thread(new ClientThread()).start();
+		sdp = new ServerDataProvider(send_message,nok,ok);
+		Thread thread = new Thread(sdp);
+		thread.start();	
 
 
 	}
@@ -307,31 +253,41 @@ LocationListener, com.google.android.gms.location.LocationListener{
 		}
 	}
 
-	Handler handler_add = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			activateUserList();
-		}
-	};
 
-	Handler handler_remove = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			clearUserList();
-		}
-	};		
-	Handler handler_zoom = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			CameraPosition cameraPosition = new CameraPosition.Builder().target(
-					new LatLng(latitude_event, longitude_event)).zoom(11).build();
+	public void zoom(){
+		CameraPosition cameraPosition = new CameraPosition.Builder().target(
+				new LatLng(latitude_event, longitude_event)).zoom(11).build();
 
-			googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+		googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-		}
-	};	
-	
-	
+	}		
+
+
+	public void createHandlers(){
+		ok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				response = sdp.getResponse();
+				String message = (String) msg.obj; //Extract the string from the Message
+				Log.d("qwerty","in handler message: "+message);
+				Log.d("qwerty","in handler response: "+response);
+				parser(message);
+				activateUserList();
+			}
+		};
+		nok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};   	
+
+	}
+
+	public void showProblemMessage(){
+		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+	}	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -345,12 +301,15 @@ LocationListener, com.google.android.gms.location.LocationListener{
 		user = login_user;
 		eventID = login_event;
 		group = login_group;
+
+		createHandlers();		
+
 		get_last_location_and_use_once();
 		// Open the shared preferences
-        mPrefs = getSharedPreferences("SharedPreferences",
-                Context.MODE_PRIVATE);
-        // Get a SharedPreferences editor
-        mEditor = mPrefs.edit();
+		mPrefs = getSharedPreferences("SharedPreferences",
+				Context.MODE_PRIVATE);
+		// Get a SharedPreferences editor
+		mEditor = mPrefs.edit();
 
 
 		mLocationClient = new LocationClient(this, this, this);
@@ -426,8 +385,8 @@ LocationListener, com.google.android.gms.location.LocationListener{
 	}
 
 	protected void onDestroy() {
-		
-		
+
+
 		super.onDestroy();
 		finish();
 	}
@@ -516,52 +475,52 @@ LocationListener, com.google.android.gms.location.LocationListener{
 		latitude = location.getLatitude();
 		whenConnected();
 
-		
+
 	}
 
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onProviderEnabled(String provider) {
 		// TODO Auto-generated method stub
 		print("GPSEnabled");
-		
+
 	}
 
 	@Override
 	public void onProviderDisabled(String provider) {
 		// TODO Auto-generated method stub
 		print("GPSDisabled");
-		
+
 	}
 
 	@Override
 	public void onDisconnected() {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
-    protected void onStop() {
-        // If the client is connected
-        if (mLocationClient.isConnected()) {
-            /*
-             * Remove location updates for a listener.
-             * The current Activity is the listener, so
-             * the argument is "this".
-             */
-            mLocationClient.removeLocationUpdates(this);
-        }
-        /*
-         * After disconnect() is called, the client is
-         * considered "dead".
-         */
-        mLocationClient.disconnect();
-        super.onStop();
-    }
+	protected void onStop() {
+		// If the client is connected
+		if (mLocationClient.isConnected()) {
+			/*
+			 * Remove location updates for a listener.
+			 * The current Activity is the listener, so
+			 * the argument is "this".
+			 */
+			mLocationClient.removeLocationUpdates(this);
+		}
+		/*
+		 * After disconnect() is called, the client is
+		 * considered "dead".
+		 */
+		mLocationClient.disconnect();
+		super.onStop();
+	}
 
 
 }
