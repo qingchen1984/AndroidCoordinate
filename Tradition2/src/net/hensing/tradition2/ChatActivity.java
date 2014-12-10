@@ -114,7 +114,7 @@ public class ChatActivity extends Activity {
 					connectButton.setEnabled(false);
 				}
 				else{
-					Log.d("qwerty3", "disp name: "+displayName);
+					//Log.d("qwerty3", "disp name: "+displayName);
 				}
 			}
 		});
@@ -155,8 +155,8 @@ public class ChatActivity extends Activity {
 			@Override
 			public void handleMessage(Message msg) {
 				if(inDisplay){
-					response = sdp.getResponse();
-					chatUpdate(response);
+					String message = (String) msg.obj; //Extract the string from the Message
+					chatUpdate(message);
 				}
 			}
 		};
@@ -223,7 +223,7 @@ public class ChatActivity extends Activity {
 
 	public void chatUpdate(String response2) {
 
-		Log.d("qwerty2",response2);
+		//Log.d("qwerty2",response2);
 		chat_area.setText(response2);
 		// below is for autoscroll if end of view is reached
 		final int scrollAmount = chat_area.getLayout().getLineTop(chat_area.getLineCount()) - chat_area.getHeight();

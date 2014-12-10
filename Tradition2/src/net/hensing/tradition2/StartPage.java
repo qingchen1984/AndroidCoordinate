@@ -1,21 +1,16 @@
 package net.hensing.tradition2;
 
-import net.hensing.tradition2.WelcomeActivity.ClientThread;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.os.Build;
 import android.preference.PreferenceManager;
 
 public class StartPage extends ActionBarActivity {

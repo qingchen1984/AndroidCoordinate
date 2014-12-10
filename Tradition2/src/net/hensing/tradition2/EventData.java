@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -127,7 +128,12 @@ private void addSuccess() {
 	TextView trackEnd = (TextView) findViewById(R.id.trackingEnd);
 	trackEnd.setText(trackingEndDate+" "+trackingEndTime);
 
-
+	Button map = (Button) findViewById(R.id.GotoMap);
+	map.setEnabled(true);
+	
+	Button pic = (Button) findViewById(R.id.TakePicture);
+	pic.setEnabled(true);
+	
 	}
 
 private void print(String string) {
@@ -189,8 +195,8 @@ public void createHandlers(){
 	ok = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-			response = sdp.getResponse();
-			parser(response);
+			String message = (String) msg.obj; //Extract the string from the Message
+			parser(message);
 
 		}
 	};
@@ -210,7 +216,7 @@ public void showProblemMessage(){
 private void parser(String msg) {
 
 
-	Log.d("qwerty", msg);
+	//Log.d("qwerty", msg);
 	Scanner scanner = new Scanner(msg);
 	//scanner.useDelimiter("=");
 	if (scanner.findInLine("EVENT_DETAILS ") != null){	

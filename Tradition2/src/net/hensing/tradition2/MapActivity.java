@@ -58,6 +58,7 @@ LocationListener, com.google.android.gms.location.LocationListener{
 	public static final String EXTRA_MESSAGE_GROUP = "net.hensing.tradition2.MESSAGE_GROUP";
 	String eventID;
 	String event;
+	private Boolean usersExist = false;
 
 	//Server data variables needed.
 	String response = "";
@@ -124,9 +125,9 @@ LocationListener, com.google.android.gms.location.LocationListener{
 
 
 	public void parser(String message) {
-		
-		Log.d("qwerty","in parser: "+message);
-		
+
+		//Log.d("qwerty","in parser: "+message);
+
 		Scanner scanner = new Scanner(message);
 		//scanner.useDelimiter("=");
 		if (scanner.findInLine("POSITIONS ") != null){
@@ -229,7 +230,7 @@ LocationListener, com.google.android.gms.location.LocationListener{
 
 		send_message = "UPDATE_POSITION " +user +" " +stringLat +" " +stringLong +" " + eventID;  
 		//send_message = (user+" long "+dec.format(longitude)+" lat "+dec.format(latitude)+" ID "+GetPhoneId() + " GROUP " + group);
-		clearUserList();
+
 		sdp = new ServerDataProvider(send_message,nok,ok);
 		Thread thread = new Thread(sdp);
 		thread.start();	
@@ -238,19 +239,26 @@ LocationListener, com.google.android.gms.location.LocationListener{
 	}
 
 	public void clearUserList(){
-		for (int i = 0;  i < userList.size();  i++) {
-			Member mbr = (Member)userList.get(i);
-			mbr.m.remove();
+
+		if (usersExist){  //only if not null, ie there are users
+
+			for (int i = 0;  i < userList.size();  i++) {
+				Member mbr = (Member)userList.get(i);
+				mbr.m.remove();
+			}
+			userList.clear();
 		}
-		userList.clear();
 	}
 
 	public void activateUserList(){
+
+				
 
 		for (int i = 0;  i < userList.size();  i++) {
 			Member mbr = (Member)userList.get(i);
 			mbr.m = googleMap.addMarker(mbr.mark);
 		}
+		if (userList.size()>0){usersExist = true;}
 	}
 
 
@@ -267,10 +275,8 @@ LocationListener, com.google.android.gms.location.LocationListener{
 		ok = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-				response = sdp.getResponse();
+				clearUserList();
 				String message = (String) msg.obj; //Extract the string from the Message
-				Log.d("qwerty","in handler message: "+message);
-				Log.d("qwerty","in handler response: "+response);
 				parser(message);
 				activateUserList();
 			}

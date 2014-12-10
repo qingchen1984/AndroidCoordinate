@@ -96,20 +96,20 @@ public class TakeImage extends Activity {
 
 	private File createImageFile() throws IOException {
 		// Create an image file name
-		Log.d("logging","debugging - 1");
+		
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		Log.d("logging","debugging - 2");
+		
 		String imageFileName = "JPEG_" + timeStamp + "_";
-		Log.d("logging","debugging - 3");
+		
 		File storageDir = Environment.getExternalStoragePublicDirectory(
 				Environment.DIRECTORY_PICTURES);
-		Log.d("logging","debugging - 4");
+		
 		File image = File.createTempFile(
 				imageFileName,  /* prefix */
 				".jpg",         /* suffix */
 				storageDir      /* directory */
 				);
-		Log.d("logging","debugging - 5");
+		
 
 		// Save a file: path for use with ACTION_VIEW intents
 		mCurrentPhotoPath = "file:" + image.getAbsolutePath();
@@ -119,7 +119,7 @@ public class TakeImage extends Activity {
 	}
 	private File createThumbFile(String origFile) throws IOException {
 		// Create an image file name
-		Log.d("qwerty", origFile.split("\\.")[0]);
+		
 		String imageFileName = "thumb_" + origFile.split("\\.")[0];
 		File storageDir = Environment.getExternalStoragePublicDirectory(
 				Environment.DIRECTORY_PICTURES);
@@ -139,23 +139,23 @@ public class TakeImage extends Activity {
 
 
 	private void dispatchTakePictureIntent() {
-		Log.d("logging","debugging - dtpIntent()");
+		
 		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
 		// Ensure that there's a camera activity to handle the intent
 		if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-			Log.d("logging","debugging - takepic not null");
+			
 			// Create the File where the photo should go
 			File photoFile = null;
 			try {
 				photoFile = createImageFile();
 			} catch (IOException ex) {
 				// Error occurred while creating the File
-				Log.d("logging","debugging - IOerror"+ex);
+				
 			}
 			// Continue only if the File was successfully created
 			if (photoFile != null) {
-				Log.d("logging","debugging - photofile not null");
+				
 				takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
 						Uri.fromFile(photoFile));
 				startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
@@ -174,7 +174,7 @@ public class TakeImage extends Activity {
 			try {
 				ExifInterface exif = new ExifInterface(fileAbsolutPath);
 				int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
-				Log.d("EXIF", "Exif: " + orientation);
+				
 				Matrix matrix = new Matrix();
 				if (orientation == 6) {
 					matrix.postRotate(90);
@@ -196,9 +196,7 @@ public class TakeImage extends Activity {
 					//	          write the compressed bitmap at the destination specified by filename.
 
 
-					Log.d("logging","debugging height" + imageBitmap.getHeight());
-					Log.d("logging","debugging width" + imageBitmap.getWidth());
-
+					
 
 					final int maxSize = 2000;
 					int outWidth;
@@ -217,9 +215,7 @@ public class TakeImage extends Activity {
 
 
 					imageBitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
-					Log.d("logging","debugging height" + imageBitmap.getHeight());
-					Log.d("logging","debugging width" + imageBitmap.getWidth());
-
+					
 
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
@@ -252,7 +248,7 @@ public class TakeImage extends Activity {
 
 
 		}
-		Log.d("logging","debugging - place: "+mCurrentPhotoPath);
+		
 	}
 
 	public void uploadClick(View view){
@@ -267,7 +263,7 @@ public class TakeImage extends Activity {
 
 
 			// Set your file path here
-			Log.d("logging","debugging - starting UploadFile()");
+			
 			FileInputStream fstrm = new FileInputStream(fileAbsolutPath);
 
 
@@ -278,7 +274,7 @@ public class TakeImage extends Activity {
 				hfu.Send_Now(fstrm);
 			}
 		} catch (FileNotFoundException e) {
-			Log.d("logging","debugging - starting exception");
+			
 			// Error: File not found
 		}
 
@@ -289,7 +285,7 @@ public class TakeImage extends Activity {
 
 
 			// Set your file path here
-			Log.d("logging","debugging - starting UploadFile()");
+			
 			FileInputStream fstrm_thumb = new FileInputStream(thumb_fileAbsolutPath);
 
 			if (!(group==null) && !(event==null)){
@@ -300,7 +296,7 @@ public class TakeImage extends Activity {
 				hfu.Send_Now(fstrm_thumb);
 			}
 		} catch (FileNotFoundException e) {
-			Log.d("logging","debugging - starting exception");
+			
 			// Error: File not found
 		}
 

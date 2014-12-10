@@ -121,6 +121,7 @@
             android:background="@drawable/button_shape"
             android:textColor="#FFFFFF"
             android:padding="5dip"
+            android:enabled="false"
             android:textAppearance="?android:attr/textAppearanceLarge" />
         
     </LinearLayout>
@@ -141,6 +142,7 @@
             android:background="@drawable/button_shape"
             android:textColor="#FFFFFF"
             android:padding="5dip"
+            android:enabled="false"
             android:textAppearance="?android:attr/textAppearanceLarge" />
         
     </LinearLayout>

@@ -41,7 +41,7 @@ public class ServerDataProvider implements Runnable {
 
 		try
 		{
-			Log.e("qwerty","Starting Http File Sending to URL");
+			//Log.e("qwerty","Starting Http File Sending to URL");
 
 
 			// Open a HTTP connection to the URL
@@ -77,7 +77,7 @@ public class ServerDataProvider implements Runnable {
 			
 			int responseCode = conn.getResponseCode();
 
-			Log.e("qwerty","Post Sent, ResponseCode: "+String.valueOf(conn.getResponseCode()));
+			//Log.e("qwerty","Post Sent, ResponseCode: "+String.valueOf(conn.getResponseCode()));
 
 			//Good case
 			if (responseCode == 200){
@@ -85,7 +85,7 @@ public class ServerDataProvider implements Runnable {
 
 				responseString = readIt(is,1000);
 				
-				Log.d("qwerty","in SDP: " + responseString);
+				//Log.d("qwerty","in SDP: " + responseString);
 				
 				HttpOk(responseString);
 			}
@@ -113,7 +113,7 @@ public class ServerDataProvider implements Runnable {
 		}
 		else{
 			
-			Log.d("qwerty","calling handler success ");
+			//Log.d("qwerty","calling handler success ");
 			
 			Message message = handler_upload_success.obtainMessage();
 			message.obj = responseString;

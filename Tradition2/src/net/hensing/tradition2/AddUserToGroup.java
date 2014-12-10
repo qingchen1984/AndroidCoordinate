@@ -94,8 +94,7 @@ public class AddUserToGroup extends ActionBarActivity {
 			@Override
 			public void handleMessage(Message msg) {
 				String message = (String) msg.obj; //Extract the string from the Message
-				response = sdp.getResponse();
-				parser(response);
+				parser(message);
 
 			}
 		};

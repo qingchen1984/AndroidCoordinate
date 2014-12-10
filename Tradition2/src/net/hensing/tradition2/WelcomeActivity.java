@@ -13,7 +13,6 @@ import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
-import net.hensing.tradition2.SelectEvent.ClientThread;
 
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -59,97 +58,16 @@ public class WelcomeActivity extends ActionBarActivity {
 	public static final String EXTRA_MESSAGE_NEW_USER = "net.hensing.tradition2.MESSAGE_NEW_USER";
 	public static final String EXTRA_MESSAGE_PASSWORD = "net.hensing.tradition2.MESSAGE_PASSWORD";
 	
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
+	
 	public void print(String message) {
 
 		//Log.d("MyLog ", "message: " + message);
 
 	}
-	
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
-				send_message = "LOGIN " + user + " " +Password;
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message);
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
-
-					print(line_from_server);
-					parser(line_from_server);
-				}
-
-				//handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
-			}
-
-		}
-
-		private void parser(String msg) {
-			
-			
-			Scanner scanner = new Scanner(msg);
-			//scanner.useDelimiter("=");
-			if (scanner.findInLine("LOGIN ") != null){
-				
-				String word;
-				word = scanner.next();
-				if (word.equals("OK")){
-					handler_add.sendEmptyMessage(0);	
-				}
-				else {
-					handler_remove.sendEmptyMessage(0);	
-				}
-
-				
-			}
-		}  
-	}
-	Handler handler_add = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			loginSuccess();
-		}
-	};
-	Handler handler_remove = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			
-			
-			Context context = getApplicationContext();
-			CharSequence text = "Invalid Login!";
-			int duration = Toast.LENGTH_SHORT;
-
-			Toast toast = Toast.makeText(context, text, duration);
-			toast.show();
-		}
-	};		
 	
 
 	public void login_user(View view) {
@@ -159,7 +77,12 @@ public class WelcomeActivity extends ActionBarActivity {
 		editTextPassword = (EditText) findViewById(R.id.editTextPassword);
 		Password = editTextPassword.getText().toString();
 		is_new_user = "false";
-		new Thread(new ClientThread()).start();
+		
+		send_message = "LOGIN " + user + " " +Password;
+		sdp = new ServerDataProvider(send_message,nok,ok);
+		Thread thread = new Thread(sdp);
+		thread.start();	
+
 	}
 	
 	
@@ -182,16 +105,59 @@ public class WelcomeActivity extends ActionBarActivity {
 		editor.putString("UserName", user);
 		editor.putString("Password", Password);
 		editor.commit();
-		startActivity(intent);
-		
-		
+		startActivity(intent);	
 	}
 
+	public void createHandlers(){
+		ok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				String message = (String) msg.obj; //Extract the string from the Message
+				parser(message);
+
+			}
+		};
+		nok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};   	
+
+	}
+
+	public void showProblemMessage(){
+		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+	}	
+	private void parser(String msg) {
+		
+		
+		Scanner scanner = new Scanner(msg);
+		//scanner.useDelimiter("=");
+		if (scanner.findInLine("LOGIN ") != null){
+			
+			String word;
+			word = scanner.next();
+			if (word.equals("OK")){
+				loginSuccess();
+			}
+			else {
+				CharSequence text = "Invalid Login!";
+				int duration = Toast.LENGTH_SHORT;
+
+				Toast toast = Toast.makeText(this, text, duration);
+				toast.show();
+			}
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_welcome);
+		
+		createHandlers();
+		
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
@@ -213,7 +179,10 @@ public class WelcomeActivity extends ActionBarActivity {
 		if(!savedUser.equals("")){
 			user = savedUser;
 			Password = savedPassword;
-			new Thread(new ClientThread()).start();
+			send_message = "LOGIN " + user + " " +Password;
+			sdp = new ServerDataProvider(send_message,nok,ok);
+			Thread thread = new Thread(sdp);
+			thread.start();	
 			
 		}
 

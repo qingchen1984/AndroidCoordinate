@@ -47,7 +47,7 @@ public class SelectEvent extends ActionBarActivity {
 	//private static final String SERVER_IP = "10.0.2.2";
 	private static final String SERVER_IP = "90.226.9.91";	
 	DecimalFormat dec = new DecimalFormat("0.0000");
-	private String send_message;
+	private String send_message, send_message_del;
 	private String user;
 	int nr_of_events;
 	private ArrayList<String> eventList = new ArrayList<String>();
@@ -56,6 +56,17 @@ public class SelectEvent extends ActionBarActivity {
 	public static final String EXTRA_MESSAGE_EVENT = "net.hensing.tradition2.MESSAGE_EVENT";
 	public static final String EXTRA_MESSAGE_USER = "net.hensing.tradition2.MESSAGE_USER";
 	public static final String EXTRA_MESSAGE_GROUP = "net.hensing.tradition2.MESSAGE_GROUP";
+	
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
+	
+	String responseDel = "";
+	ServerDataProvider sdpDel;
+	Handler okDel = null;
+	Handler nokDel = null;
+	
 
 	public void print(String message) {
 
@@ -63,75 +74,7 @@ public class SelectEvent extends ActionBarActivity {
 
 	}
 
-	class ClientThread implements Runnable {
-		// thread to connect to socket and listen
-		// for messages and then print them in chatbox.
-		public void run(){
-			try {
-				InetAddress serverAddress = InetAddress.getByName(SERVER_IP);			
-				socket = new Socket();
-				socket.connect(new InetSocketAddress(serverAddress, SERVERPORT), 9000);
-				isConnected = true;
-				print("Connected to server");
-				PrintWriter out;
-				send_message = "GET_MY_EVENTS " + group;
-				try {
-					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
-					out.println(send_message);
-					out.flush();
-					//clearChat();
-					print("Jag: " + send_message);
 
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				BufferedReader buf_from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				while(isConnected && socket.isConnected()){
-					String line_from_server = buf_from_server.readLine();
-					if (line_from_server == null){print("exit");
-					isConnected=false; print("disconnected from server"); break;}
-
-					print(line_from_server);
-					parser(line_from_server);
-				}
-
-				//handler_add.sendEmptyMessage(0);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				print("ERROR No conn est...");
-			}
-
-		}
-
-
-
-		private void parser(String msg) {
-
-
-			Scanner scanner = new Scanner(msg);
-			//scanner.useDelimiter("=");
-			if (scanner.findInLine("MY_EVENTS ") != null){
-
-				nr_of_events = msg.split(" ").length -1;
-				String word;
-				for (int i = 1; i<=nr_of_events; i++){
-
-					word = scanner.next();
-					eventList.add(word);
-
-				}
-				handler_add.sendEmptyMessage(0);
-
-
-			}
-		}  
-	}
 
 	class DeleteThread implements Runnable {
 		// thread to connect to socket and listen
@@ -144,7 +87,7 @@ public class SelectEvent extends ActionBarActivity {
 				isConnected = true;
 				print("Connected to server");
 				PrintWriter out;
-				send_message = "DELETE_GROUP " + group;
+				send_message_del = "DELETE_GROUP " + group;
 				try {
 					out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
 					out.println(send_message);
@@ -374,8 +317,12 @@ public class SelectEvent extends ActionBarActivity {
 	    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int which) { 
 	            // continue with delete
-	    		new Thread(new DeleteThread()).start();
-	    		startActivity(intent);
+	        	send_message_del = "DELETE_GROUP " + group;
+	        	sdpDel = new ServerDataProvider(send_message_del,nokDel,okDel);
+				Thread thread = new Thread(sdpDel);
+				thread.start();	
+	        	
+	    		
 
 	        }
 	     })
@@ -403,6 +350,72 @@ public class SelectEvent extends ActionBarActivity {
 		startActivity(intent);
 
 	}
+	
+	public void createHandlers(){
+		ok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				String message = (String) msg.obj; //Extract the string from the Message
+				parser(message);
+
+			}
+		};
+		nok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};   	
+
+	}
+	
+	public void startSelectGroup(){
+		intent = new Intent(this, SelectGroup.class);
+		startActivity(intent);
+		
+	}
+	
+	public void createHandlersDel(){
+		okDel = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				
+				startSelectGroup();
+			}
+		};
+		nokDel = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};   	
+
+	}
+
+	public void showProblemMessage(){
+		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+	}	
+	
+	private void parser(String msg) {
+
+
+		Scanner scanner = new Scanner(msg);
+		//scanner.useDelimiter("=");
+		if (scanner.findInLine("MY_EVENTS") != null){
+
+			nr_of_events = msg.split(" ").length -1;
+			String word;
+			for (int i = 1; i<=nr_of_events; i++){
+
+				word = scanner.next();
+				eventList.add(word);
+
+			}
+			populateButtons();
+
+
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -413,12 +426,19 @@ public class SelectEvent extends ActionBarActivity {
 		final String login_user = intent.getStringExtra(SelectGroup.EXTRA_MESSAGE_USER);
 		group = login_group;
 		user = login_user;
+		
+		createHandlers();
+		createHandlersDel();
 
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
 		}
-		new Thread(new ClientThread()).start();
+		send_message = "GET_MY_EVENTS " + group;
+		
+		sdp = new ServerDataProvider(send_message,nok,ok);
+		Thread thread = new Thread(sdp);
+		thread.start();	
 	}
 
 	@Override

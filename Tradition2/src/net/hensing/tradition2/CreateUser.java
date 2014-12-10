@@ -146,8 +146,8 @@ public class CreateUser extends ActionBarActivity {
 		ok = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-				response = sdp.getResponse();
-				parser(response);
+				String message = (String) msg.obj; //Extract the string from the Message
+				parser(message);
 
 			}
 		};
