@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import android.os.Handler;
-import android.util.Log;
 	
 public class ThumbHttpFileUpload implements Runnable{
 	
@@ -32,7 +31,7 @@ public class ThumbHttpFileUpload implements Runnable{
     	private Handler handler_upload_success;
 
         ThumbHttpFileUpload(String urlString, String origName, String vTitle, String groupName, String eventId,String vDesc, Handler handler_failed, Handler handler_success){
-        	Log.d("logging","debugging - starting HTTPFILEUPLOAD");
+        	
 
                 try{
                         connectURL = new URL(urlString);
@@ -44,7 +43,7 @@ public class ThumbHttpFileUpload implements Runnable{
                         handler_upload_failed = handler_failed;
                         handler_upload_success = handler_success;
                 }catch(Exception ex){
-                    Log.i("HttpFileUpload","URL Malformatted");
+                    //Log.i("HttpFileUpload","URL Malformatted");
                 }
         }
 	
@@ -61,7 +60,7 @@ public class ThumbHttpFileUpload implements Runnable{
                 String Tag="fSnd";
                 try
                 {
-                        Log.e(Tag,"Starting Http File Sending to URL");
+                        
 	
                         // Open a HTTP connection to the URL
                         HttpURLConnection conn = (HttpURLConnection)connectURL.openConnection();
@@ -104,8 +103,7 @@ public class ThumbHttpFileUpload implements Runnable{
                         dos.writeBytes(lineEnd);
                         
       
-                        Log.e(Tag,"Headers are written");
-	
+                       
                         // create a buffer of maximum size
                         int bytesAvailable = fileInputStream.available();
 	                        
@@ -131,7 +129,7 @@ public class ThumbHttpFileUpload implements Runnable{
 	                        
                         dos.flush();
 	                        
-                        Log.e(Tag,"File Sent, Response: "+String.valueOf(conn.getResponseCode()));
+                       
 	                         
                         InputStream is = conn.getInputStream();
 	                        
@@ -141,18 +139,18 @@ public class ThumbHttpFileUpload implements Runnable{
                         StringBuffer b =new StringBuffer();
                         while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
                         String s=b.toString();
-                        Log.i("Response",s);
+                       
                         dos.close();
                         useResult(s);
                 }
                 catch (MalformedURLException ex)
                 {
-                        Log.e(Tag, "URL error: " + ex.getMessage(), ex);
+                        //Log.e(Tag, "URL error: " + ex.getMessage(), ex);
                 }
 	
                 catch (IOException ioe)
                 {
-                        Log.e(Tag, "IO error: " + ioe.getMessage(), ioe);
+                        //Log.e(Tag, "IO error: " + ioe.getMessage(), ioe);
                 }
         }
         

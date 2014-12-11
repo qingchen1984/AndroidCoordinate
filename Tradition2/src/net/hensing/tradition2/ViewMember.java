@@ -1,6 +1,5 @@
 package net.hensing.tradition2;
 
-import java.net.Socket;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -25,11 +24,7 @@ public class ViewMember extends ActionBarActivity {
 	
 	String group;
 	int nr_of_members;
-	private boolean isConnected = false;
-	private Socket socket;
-	private static final int SERVERPORT = 1234;
-	//private static final String SERVER_IP = "10.0.2.2";
-	private static final String SERVER_IP = "90.226.9.91";	
+
 	DecimalFormat dec = new DecimalFormat("0.0000");
 	private String send_message;
 	private ArrayList<String> memberList = new ArrayList<String>();

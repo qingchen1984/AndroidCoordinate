@@ -12,7 +12,6 @@ import org.json.JSONException;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.util.Log;
 
 public class Paths implements Runnable {
 	private Handler myHandler;
