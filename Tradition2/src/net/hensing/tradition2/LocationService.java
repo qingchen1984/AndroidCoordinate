@@ -1,10 +1,7 @@
  package net.hensing.tradition2;
 
 import java.text.DecimalFormat;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationRequest;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -17,12 +14,19 @@ import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
+
 public class LocationService extends Service 
-implements
-GooglePlayServicesClient.ConnectionCallbacks,
-GooglePlayServicesClient.OnConnectionFailedListener,
-LocationListener, com.google.android.gms.location.LocationListener
-{
+implements LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+
+
+
 	
 
 	
@@ -30,7 +34,7 @@ LocationListener, com.google.android.gms.location.LocationListener
 
 	private String send_message;
 	LocationRequest mLocationRequest;
-	LocationClient mLocationClient;
+	GoogleApiClient mGoogleApiClient;
 	boolean mUpdatesRequested = true;
 	public static Context c;
 	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
@@ -83,8 +87,8 @@ LocationListener, com.google.android.gms.location.LocationListener
     	//Toast.makeText(this, "onCreate - lets start thread", Toast.LENGTH_SHORT).show();
     	firstTimeAccess = true;
     	
-    	mLocationClient = new LocationClient(this, this, this);
-
+    	mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(LocationServices.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
+    	
 
 		// Create the LocationRequest object
 		mLocationRequest = LocationRequest.create();
@@ -120,7 +124,7 @@ LocationListener, com.google.android.gms.location.LocationListener
 			if (user==null){
 				user = "null";
 			}
-			mLocationClient.connect();
+			mGoogleApiClient.connect();
 			firstTimeAccess = false;
 		}
 		
@@ -158,7 +162,7 @@ LocationListener, com.google.android.gms.location.LocationListener
 		print("onConnected");
 		//if (mUpdatesRequested) {
 		if(true){
-			mLocationClient.requestLocationUpdates(mLocationRequest, this);
+			LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 			print(" in if mUpdatesRequested");
 		}
 	}
@@ -208,11 +212,7 @@ LocationListener, com.google.android.gms.location.LocationListener
 		
 	}
 
-	@Override
-	public void onDisconnected() {
-		// TODO Auto-generated method stub
-		
-	}
+
 	public void print(String message) {
 
 		//Log.d("MyLog ", "message: " + message);
@@ -249,6 +249,11 @@ public void createHandlers(){
 		}
 	};   	
 
+}
+@Override
+public void onConnectionSuspended(int arg0) {
+	// TODO Auto-generated method stub
+	
 }
 }
 

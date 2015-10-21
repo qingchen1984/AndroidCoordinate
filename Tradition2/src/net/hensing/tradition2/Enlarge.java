@@ -18,8 +18,8 @@ public class Enlarge extends Activity {
 	String path;
 	Handler bitmapHandler;
 	NetworkImage myNetworkImage;
-	String urlToPaths = "http://90.226.9.91/php/get_image_paths.php";
-	String urlToImages = "http://90.226.9.91/php/download_image.php";
+	String urlToPaths = "http://77.66.108.128/php/get_image_paths.php";
+	String urlToImages = "http://77.66.108.128/php/download_image.php";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

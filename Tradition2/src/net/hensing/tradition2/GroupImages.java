@@ -33,8 +33,8 @@ public class GroupImages extends Activity {
 	Handler bitmapHandler;
 	NetworkImage myNetworkImage;
 	Paths myPaths;
-	String urlToPaths = "http://90.226.9.91/php/get_image_paths.php";
-	String urlToImages = "http://90.226.9.91/php/download_image.php";
+	String urlToPaths = "http://77.66.108.128/php/get_image_paths.php";
+	String urlToImages = "http://77.66.108.128/php/download_image.php";
 	String group = "testAppGroup";
 	int jsonTotal;
 	TableRow tableRow = null;

@@ -38,7 +38,7 @@ public class WelcomeActivity extends ActionBarActivity {
 	private Socket socket;
 	private static final int SERVERPORT = 1234;
 	//private static final String SERVER_IP = "10.0.2.2";
-	private static final String SERVER_IP = "90.226.9.91";	
+	private static final String SERVER_IP = "77.66.108.128";	
 	DecimalFormat dec = new DecimalFormat("0.0000");
 	private String send_message;
 

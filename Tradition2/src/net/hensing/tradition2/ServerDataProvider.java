@@ -15,7 +15,7 @@ import android.os.Message;
 
 public class ServerDataProvider implements Runnable {
 
-	String urlString = "http://90.226.9.91/php/webClientDataForm.php";
+	String urlString = "http://77.66.108.128/php/webClientDataForm.php";
 	URL connectURL;
 	String responseString;
 	FileInputStream fileInputStream = null;

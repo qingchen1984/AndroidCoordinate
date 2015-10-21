@@ -5,20 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-
-import android.support.v7.app.ActionBarActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -29,16 +15,27 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-public class MapActivity extends ActionBarActivity implements
-GooglePlayServicesClient.ConnectionCallbacks,
-GooglePlayServicesClient.OnConnectionFailedListener,
-LocationListener, com.google.android.gms.location.LocationListener{
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
+public class MapActivity extends ActionBarActivity implements
+LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
 	private boolean zoomedToEvent = false;
 	DecimalFormat dec = new DecimalFormat("0.0000");
@@ -49,7 +46,7 @@ LocationListener, com.google.android.gms.location.LocationListener{
 	private String user = "unRegistred";
 	private String group = "GroupNotSet";
 	LocationRequest mLocationRequest;
-	LocationClient mLocationClient;
+	GoogleApiClient mGoogleApiClient;
 	boolean mUpdatesRequested = true;
 	public static Context c;
 	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
@@ -316,9 +313,8 @@ LocationListener, com.google.android.gms.location.LocationListener{
 		// Get a SharedPreferences editor
 		mEditor = mPrefs.edit();
 
-
-		mLocationClient = new LocationClient(this, this, this);
-
+		mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(LocationServices.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
+    	
 
 		// Create the LocationRequest object
 		mLocationRequest = LocationRequest.create();
@@ -348,7 +344,7 @@ LocationListener, com.google.android.gms.location.LocationListener{
 	}
 	@Override
 	protected void onStart() {
-		mLocationClient.connect();
+		mGoogleApiClient.connect();
 		super.onStart();
 
 	}
@@ -429,7 +425,7 @@ LocationListener, com.google.android.gms.location.LocationListener{
 		print("onConnected");
 		//if (mUpdatesRequested) {
 		if(true){
-			mLocationClient.requestLocationUpdates(mLocationRequest, this);
+			LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 			print(" in if mUpdatesRequested");
 		}
 	}
@@ -503,28 +499,20 @@ LocationListener, com.google.android.gms.location.LocationListener{
 
 	}
 
-	@Override
-	public void onDisconnected() {
-		// TODO Auto-generated method stub
 
-	}
 	@Override
 	protected void onStop() {
 		// If the client is connected
-		if (mLocationClient.isConnected()) {
-			/*
-			 * Remove location updates for a listener.
-			 * The current Activity is the listener, so
-			 * the argument is "this".
-			 */
-			mLocationClient.removeLocationUpdates(this);
-		}
-		/*
-		 * After disconnect() is called, the client is
-		 * considered "dead".
-		 */
-		mLocationClient.disconnect();
 		super.onStop();
+        if(mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+	}
+
+	@Override
+	public void onConnectionSuspended(int arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

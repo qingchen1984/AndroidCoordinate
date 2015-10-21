@@ -262,7 +262,7 @@ public class TakeImage extends Activity {
 
 			if (!(group==null) && !(event==null)){
 				// Set your server page url (and the file title/description)
-				HttpFileUpload hfu = new HttpFileUpload("http://90.226.9.91/php/upload_image.php", mFileName,group,event,"my file description",handler_upload_failed,handler_upload_success);
+				HttpFileUpload hfu = new HttpFileUpload("http://77.66.108.128/php/upload_image.php", mFileName,group,event,"my file description",handler_upload_failed,handler_upload_success);
 
 				hfu.Send_Now(fstrm);
 			}
@@ -284,7 +284,7 @@ public class TakeImage extends Activity {
 			if (!(group==null) && !(event==null)){
 
 				// Set your server page url (and the file title/description)
-				ThumbHttpFileUpload hfu = new ThumbHttpFileUpload("http://90.226.9.91/php/upload_thumb.php", mFileName, thumb_mFileName,group,event,"my file description",handler_upload_failed,handler_upload_success);
+				ThumbHttpFileUpload hfu = new ThumbHttpFileUpload("http://77.66.108.128/php/upload_thumb.php", mFileName, thumb_mFileName,group,event,"my file description",handler_upload_failed,handler_upload_success);
 
 				hfu.Send_Now(fstrm_thumb);
 			}
