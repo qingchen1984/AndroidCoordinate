@@ -72,16 +72,6 @@ public class WelcomeActivity extends ActionBarActivity {
 		thread.start();	
 
 	}
-	
-	
-	/*public void autoLogin(String mUser){
-		intent = new Intent(this, MainActivity.class);
-		is_new_user = "false";
-		user = mUser;
-		intent.putExtra(EXTRA_MESSAGE_USER, user);
-		intent.putExtra(EXTRA_MESSAGE_NEW_USER, is_new_user);
-		startActivity(intent);
-	}*/
 
 	private void loginSuccess() {
 		intent = new Intent(this, SelectGroup.class);
@@ -164,17 +154,7 @@ public class WelcomeActivity extends ActionBarActivity {
 		EditText editTextOnResumePassword = (EditText) findViewById(R.id.editTextPassword);
 		editTextOnResumePassword.setText(savedPassword);
 		
-		if(!savedUser.equals("")){
-			user = savedUser;
-			Password = savedPassword;
-			send_message = "LOGIN " + user + " " +Password;
-			sdp = new ServerDataProvider(send_message,nok,ok);
-			Thread thread = new Thread(sdp);
-			thread.start();	
-			
-		}
 
-		//     }
 		super.onResume();
 	}
 	@Override

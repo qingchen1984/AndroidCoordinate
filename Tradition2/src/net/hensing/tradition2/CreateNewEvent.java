@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -231,6 +232,7 @@ public class CreateNewEvent extends ActionBarActivity {
 
 				send_message = "CREATE_EVENT "+eventTime + " " +startTime+ " " +endTime+ " " +lat+ " " +lng+ " " + eventName + " " + group;
 
+				//print("send_message: "+send_message);
 				sdp = new ServerDataProvider(send_message,nok,ok);
 				Thread thread = new Thread(sdp);
 				thread.start();	
@@ -264,13 +266,14 @@ public class CreateNewEvent extends ActionBarActivity {
 
 	private void parser(String msg) {
 
-
+		print("in parser: "+msg);
 		Scanner scanner = new Scanner(msg);
 		//scanner.useDelimiter("=");
 		if (scanner.findInLine("EVENT ") != null){
 
 			String word;
 			word = scanner.next();
+			//print(word);
 			if (word.equals("OK")){
 				eventSuccess();
 			}
@@ -282,6 +285,12 @@ public class CreateNewEvent extends ActionBarActivity {
 
 
 			}
+		}
+		else {
+			CharSequence text = "Invalid event";
+			int duration = Toast.LENGTH_SHORT;
+			Toast toast = Toast.makeText(this, text, duration);
+			toast.show();
 		}
 	}
 
@@ -302,6 +311,7 @@ public class CreateNewEvent extends ActionBarActivity {
 			@Override
 			public void handleMessage(Message msg) {
 				String message = (String) msg.obj; //Extract the string from the Message
+				//print(message);
 				parser(message);
 
 			}

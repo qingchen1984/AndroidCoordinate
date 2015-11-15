@@ -122,8 +122,6 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 
 	public void parser(String message) {
 
-		//Log.d("qwerty","in parser: "+message);
-
 		Scanner scanner = new Scanner(message);
 		//scanner.useDelimiter("=");
 		if (scanner.findInLine("POSITIONS ") != null){
@@ -135,7 +133,7 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 			}
 			catch(NumberFormatException e){
 				parsable = false;
-				print("ERROR nr of persons NOT integer");
+				//print("ERROR nr of persons NOT integer");
 			}
 
 			message = "";
@@ -391,6 +389,7 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 		super.onDestroy();
 		finish();
 	}
+	/*
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
 
@@ -399,6 +398,7 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 		inflater.inflate(R.menu.main, menu);
 		return super.onCreateOptionsMenu(menu);   
 	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle presses on the action bar items
@@ -417,6 +417,8 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 			return super.onOptionsItemSelected(item);
 		}
 	}
+	*/
+	
 	@Override
 	public void onConnected(Bundle dataBundle) {
 		// Display the connection status

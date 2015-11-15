@@ -130,8 +130,8 @@ private void addSuccess() {
 	Button map = (Button) findViewById(R.id.GotoMap);
 	map.setEnabled(true);
 	
-	Button pic = (Button) findViewById(R.id.TakePicture);
-	pic.setEnabled(true);
+	//Button pic = (Button) findViewById(R.id.TakePicture);
+	//pic.setEnabled(true);
 	
 	}
 
@@ -139,7 +139,7 @@ private void print(String string) {
 	// TODO Auto-generated method stub
 	
 }
-
+/*
 public void PictureClick(View view) {
 	Intent intent;
 	
@@ -151,6 +151,7 @@ public void PictureClick(View view) {
 	startActivity(intent);
 }
 	
+*/
 
 public void startClick(View view) {
 	

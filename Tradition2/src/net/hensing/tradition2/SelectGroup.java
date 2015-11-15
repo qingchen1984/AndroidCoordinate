@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -87,6 +88,11 @@ public class SelectGroup extends ActionBarActivity {
 
 			
 		}        
+	}
+	public void onDestroy(){
+		super.onDestroy();
+		Intent service_intent = new Intent(this, LocationService.class);
+		stopService(service_intent);
 	}
 
 	private void populateButtons() {
@@ -168,6 +174,7 @@ public class SelectGroup extends ActionBarActivity {
 			@Override
 			public void handleMessage(Message msg) {
 				String message = (String) msg.obj; //Extract the string from the Message
+				//Log.d("qwerty","ok handler: " + message);
 				parser(message);
 
 			}
@@ -188,6 +195,7 @@ public class SelectGroup extends ActionBarActivity {
 
 		Scanner scanner = new Scanner(msg);
 		//scanner.useDelimiter("=");
+		
 		if (scanner.findInLine("MY_GROUPS ") != null){
 
 			nr_of_groups = msg.split(" ").length -1;
@@ -201,6 +209,10 @@ public class SelectGroup extends ActionBarActivity {
 			populateButtons();
 
 
+		}
+		else{
+			nr_of_groups = 0;
+			populateButtons();
 		}
 	} 
 

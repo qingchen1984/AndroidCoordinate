@@ -1,29 +1,146 @@
 package net.hensing.tradition2;
 
+import java.net.Socket;
+import java.text.DecimalFormat;
+import java.util.Scanner;
+
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Toast;
 import android.preference.PreferenceManager;
 
 public class StartPage extends ActionBarActivity {
 	SharedPreferences sharedPref;
+	SharedPreferences.Editor editor;
+
+	EditText editTextName;
+	EditText editTextPassword;
+	String user;
+	Intent intent;
+	String is_new_user;
+	String Password;
+	private boolean isConnected = false;
+	private Socket socket;
+	private static final int SERVERPORT = 1234;
+	//private static final String SERVER_IP = "10.0.2.2";
+	private static final String SERVER_IP = "77.66.108.128";	
+	DecimalFormat dec = new DecimalFormat("0.0000");
+	private String send_message;
+
+	public static final String EXTRA_MESSAGE_USER = "net.hensing.tradition2.MESSAGE_USER";
+	public static final String EXTRA_MESSAGE_NEW_USER = "net.hensing.tradition2.MESSAGE_NEW_USER";
+	public static final String EXTRA_MESSAGE_PASSWORD = "net.hensing.tradition2.MESSAGE_PASSWORD";
+	
+	String response = "";
+	ServerDataProvider sdp;
+	Handler ok = null;
+	Handler nok = null;
+	public void login_user(View view) {
+		
+		send_message = "LOGIN " + user + " " +Password;
+		sdp = new ServerDataProvider(send_message,nok,ok);
+		Thread thread = new Thread(sdp);
+		thread.start();	
+
+	}
+	
+	private void loginSuccess() {
+		intent = new Intent(this, SelectGroup.class);
+		intent.putExtra(EXTRA_MESSAGE_USER, user);
+		intent.putExtra(EXTRA_MESSAGE_NEW_USER, is_new_user);
+		intent.putExtra(EXTRA_MESSAGE_PASSWORD, Password);
+		sharedPref =  PreferenceManager.getDefaultSharedPreferences(this);
+		editor = sharedPref.edit();
+		editor.putString("UserName", user);
+		editor.putString("Password", Password);
+		editor.commit();
+		startActivity(intent);	
+	}
+
+	public void createHandlers(){
+		ok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				String message = (String) msg.obj; //Extract the string from the Message
+				parser(message);
+
+			}
+		};
+		nok = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				showProblemMessage();
+			}
+		};   	
+
+	}
+
+	public void showProblemMessage(){
+		Toast.makeText(this, "Connection Problem", Toast.LENGTH_LONG).show();
+	}	
+	private void parser(String msg) {
+		
+		
+		Scanner scanner = new Scanner(msg);
+		//scanner.useDelimiter("=");
+		if (scanner.findInLine("LOGIN ") != null){
+			
+			String word;
+			word = scanner.next();
+			if (word.equals("OK")){
+				loginSuccess();
+			}
+			else {
+				CharSequence text = "Invalid Login!";
+				int duration = Toast.LENGTH_SHORT;
+
+				Toast toast = Toast.makeText(this, text, duration);
+				toast.show();
+			}
+		}
+		else {
+			CharSequence text = "Invalid Login!";
+			int duration = Toast.LENGTH_SHORT;
+
+			Toast toast = Toast.makeText(this, text, duration);
+			toast.show();
+		}
+	}
+	
+	
+	public void change_user(View view) {
+
+		Intent intent = new Intent(this, WelcomeActivity.class);
+		startActivity(intent);
+		
+	}
+
+	public void create_user(View view) {
+
+		Intent intent = new Intent(this, CreateUser.class);
+		startActivity(intent);
+		
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_start_page);
+		setContentView(R.layout.activity_start_page);	
 		
 		
-
-
+		createHandlers();
 
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
@@ -43,22 +160,10 @@ public class StartPage extends ActionBarActivity {
         super.onResume();
 		sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 		sharedPref =  PreferenceManager.getDefaultSharedPreferences(this);
-		String savedUser = sharedPref.getString("UserName", "");
-		String savedPassword = sharedPref.getString("Password", "");
-		
-		
-		if(savedUser.equals("")){
-			Intent intent;
-			intent = new Intent(this, CreateOrLogin.class);
-			startActivity(intent);	
-			
+		user = sharedPref.getString("UserName", "");
+		Password = sharedPref.getString("Password", "");
 
-		}
-		else{
-			Intent intent;
-			intent = new Intent(this, WelcomeActivity.class);
-			startActivity(intent);				
-		}        
+		
     }
 	
 	@Override

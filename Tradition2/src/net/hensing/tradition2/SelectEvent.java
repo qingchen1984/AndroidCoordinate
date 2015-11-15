@@ -43,7 +43,7 @@ public class SelectEvent extends ActionBarActivity {
 	//private static final String SERVER_IP = "10.0.2.2";
 	private static final String SERVER_IP = "77.66.108.128";	
 	DecimalFormat dec = new DecimalFormat("0.0000");
-	private String send_message, send_message_del;
+	private String send_message, send_message_del, accept_message;
 	private String user;
 	int nr_of_events;
 	private ArrayList<String> eventList = new ArrayList<String>();
@@ -54,9 +54,10 @@ public class SelectEvent extends ActionBarActivity {
 	public static final String EXTRA_MESSAGE_GROUP = "net.hensing.tradition2.MESSAGE_GROUP";
 	
 	String response = "";
-	ServerDataProvider sdp;
+	ServerDataProvider sdp, accept_sdp;
 	Handler ok = null;
 	Handler nok = null;
+	Handler empty_response = null;
 	
 	String responseDel = "";
 	ServerDataProvider sdpDel;
@@ -240,38 +241,9 @@ public class SelectEvent extends ActionBarActivity {
 
 		tableRow.addView(button);
 		
-		// View Group Imags
-				TableRow tableRowImages = new TableRow(this);
-				table.addView(tableRowImages);
-				Button buttonImages = new Button(this);
-				//button.setBackground(myBS);
-				buttonImages.setBackgroundResource(R.drawable.button_shape_config);
-				buttonImages.setTextColor(Color.parseColor("#FFFFFF"));
-
-				buttonImages.setText("View group images");
-				buttonImages.setOnClickListener(new View.OnClickListener(){
-
-					@Override
-					public void onClick(View v) {
-						groupImagesButtonClicked();
-					}
-
-				});
-
-				tableRowImages.addView(buttonImages);
-
+		
 	}
 
-	protected void groupImagesButtonClicked() {
-
-		//Toast.makeText(this, "Event clicked", Toast.LENGTH_SHORT).show();
-
-		intent = new Intent(this, GroupImages.class);
-		intent.putExtra(EXTRA_MESSAGE_GROUP, group);
-
-		startActivity(intent);
-
-	}
 
 	protected void newEventButtonClicked() {
 
@@ -361,7 +333,13 @@ public class SelectEvent extends ActionBarActivity {
 			public void handleMessage(Message msg) {
 				showProblemMessage();
 			}
-		};   	
+		};   
+		empty_response = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				//do nothing
+			}
+		};   
 
 	}
 	
@@ -430,6 +408,11 @@ public class SelectEvent extends ActionBarActivity {
 			getSupportFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
 		}
+		accept_message = "RESPOND_TO_GROUPINVITE" + " " + group + " " + user + " " +"YES";
+		accept_sdp = new ServerDataProvider(accept_message,empty_response,empty_response);
+		Thread accept_thread = new Thread(accept_sdp);
+		accept_thread.start();	
+		
 		send_message = "GET_MY_EVENTS " + group;
 		
 		sdp = new ServerDataProvider(send_message,nok,ok);

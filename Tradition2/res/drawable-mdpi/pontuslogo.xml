@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android" 
+	android:background="@color/white"
+    android:src="@drawable/gepa1000x2"
+    android:tileMode="disabled" android:gravity="top" >
+
+</bitmap>

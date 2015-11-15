@@ -12,6 +12,7 @@ import java.net.URL;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class ServerDataProvider implements Runnable {
 
@@ -80,7 +81,7 @@ public class ServerDataProvider implements Runnable {
 
 				responseString = readIt(is,1000);
 				
-				//Log.d("qwerty","in SDP: " + responseString);
+				Log.d("qwerty","in SDP: " + responseString);
 				
 				HttpOk(responseString);
 			}
