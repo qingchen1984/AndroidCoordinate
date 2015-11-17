@@ -49,11 +49,16 @@ public class StartPage extends ActionBarActivity {
 	Handler nok = null;
 	public void login_user(View view) {
 		
-		send_message = "LOGIN " + user + " " +Password;
-		sdp = new ServerDataProvider(send_message,nok,ok);
-		Thread thread = new Thread(sdp);
-		thread.start();	
-
+		if(user==""){
+			Intent intent = new Intent(this, WelcomeActivity.class);
+			startActivity(intent);
+		}
+		else{
+			send_message = "LOGIN " + user + " " +Password;
+			sdp = new ServerDataProvider(send_message,nok,ok);
+			Thread thread = new Thread(sdp);
+			thread.start();	
+		}
 	}
 	
 	private void loginSuccess() {
@@ -147,7 +152,7 @@ public class StartPage extends ActionBarActivity {
 					.add(R.id.container, new PlaceholderFragment()).commit();
 		}
 	}
-
+/*
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -155,7 +160,7 @@ public class StartPage extends ActionBarActivity {
 		getMenuInflater().inflate(R.menu.start_page, menu);
 		return true;
 	}
-
+*/
     public void onResume() {
         super.onResume();
 		sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -165,7 +170,7 @@ public class StartPage extends ActionBarActivity {
 
 		
     }
-	
+	/*
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -177,6 +182,8 @@ public class StartPage extends ActionBarActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
+*/
 
 	/**
 	 * A placeholder fragment containing a simple view.
@@ -193,6 +200,8 @@ public class StartPage extends ActionBarActivity {
 					container, false);
 			return rootView;
 		}
+		
 	}
+	
 
 }
