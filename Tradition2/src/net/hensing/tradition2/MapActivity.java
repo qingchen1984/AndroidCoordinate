@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,12 +26,14 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -42,6 +45,7 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 
 
 	private ArrayList<Member> userList = new ArrayList<Member>();
+	List<Marker> markers = new ArrayList<Marker>();
 	private String send_message;
 	private String user = "unRegistred";
 	private String group = "GroupNotSet";
@@ -156,17 +160,11 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 				//temp = scanner.findInLine("id=");
 				//id = scanner.next();
 
-				if (i == 1 && !zoomedToEvent){
-					latitude_event = Double.parseDouble(lat);
-					longitude_event = Double.parseDouble(lon);
-					zoom();
-					zoomedToEvent = true;
-				}
-
 				userList.add(new Member(name, latDouble, lonDouble));
 			}
 		}
 		scanner.close();
+		
 	}
 
 	public void print(String message) {
@@ -251,16 +249,31 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 		for (int i = 0;  i < userList.size();  i++) {
 			Member mbr = (Member)userList.get(i);
 			mbr.m = googleMap.addMarker(mbr.mark);
+			if (!zoomedToEvent){
+				markers.add(mbr.m);
+			}
 		}
 		if (userList.size()>0){usersExist = true;}
 	}
 
 
 	public void zoom(){
-		CameraPosition cameraPosition = new CameraPosition.Builder().target(
-				new LatLng(latitude_event, longitude_event)).zoom(11).build();
+		LatLngBounds.Builder builder = new LatLngBounds.Builder();
+		Log.d("MyLog ", "message: " + markers.size() );
+		for (Marker marker : markers) {
+			Log.d("MyLog ", "message: " + marker.getPosition() );
+		    builder.include(marker.getPosition());
+		}
+		LatLngBounds bounds = builder.build();
+		int padding = 20; // offset from edges of the map in pixels
+		CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+		googleMap.animateCamera(cu);
+		
+		
+		//CameraPosition cameraPosition = new CameraPosition.Builder().target(
+			//	new LatLng(latitude_event, longitude_event)).zoom(11).build();
 
-		googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+		//googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
 	}		
 
@@ -273,6 +286,10 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 				String message = (String) msg.obj; //Extract the string from the Message
 				parser(message);
 				activateUserList();
+				if (!zoomedToEvent){
+					zoom();
+					zoomedToEvent = true;
+				}
 			}
 		};
 		nok = new Handler() {
@@ -355,6 +372,7 @@ LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnect
 		if (googleMap == null) {
 			googleMap = ((MapFragment) getFragmentManager().findFragmentById(
 					R.id.map)).getMap();
+			googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
 
 			// check if map is created successfully or not

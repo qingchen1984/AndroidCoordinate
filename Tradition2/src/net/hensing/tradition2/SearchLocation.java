@@ -17,15 +17,18 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class SearchLocation extends FragmentActivity implements
-OnMarkerClickListener{
+OnMarkerClickListener, OnMapLongClickListener, OnMapClickListener{
 	
 	GoogleMap googleMap;
 	MarkerOptions markerOptions;
@@ -39,6 +42,8 @@ OnMarkerClickListener{
 	public static final String EXTRA_MESSAGE_LAT = "net.hensing.tradition2.MESSAGE_LAT";
 	public static final String EXTRA_MESSAGE_LON = "net.hensing.tradition2.MESSAGE_LON";
 	public static final String EXTRA_MESSAGE_GROUP = "net.hensing.tradition2.MESSAGE_GROUP";
+	
+	
 	
 	@Override
 	public boolean onMarkerClick(Marker marker) {
@@ -87,7 +92,11 @@ OnMarkerClickListener{
 		// Getting a reference to the map
 		googleMap = supportMapFragment.getMap();
 		googleMap.setOnMarkerClickListener(this);
-		
+		googleMap.setMyLocationEnabled(true);
+		googleMap.setOnMapLongClickListener(this);
+		googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+		googleMap.setOnMapClickListener(this);
+	    
 		// Getting reference to btn_find of the layout activity_main
         Button btn_find = (Button) findViewById(R.id.btn_find);
         
@@ -138,7 +147,8 @@ OnMarkerClickListener{
 				return addresses;
 			}
 			
-			
+		
+	        
 			
 			@Override
 			protected void onPostExecute(List<Address> addresses) {			
@@ -166,17 +176,31 @@ OnMarkerClickListener{
 			        markerOptions.position(latLng);
 			        markerOptions.title(addressText);
 			        markerOptions.icon(BitmapDescriptorFactory.defaultMarker((float) 13));
-
 			        googleMap.addMarker(markerOptions);
 			        
-			        
-			        
 			        // Locate the first location
-			        if(i==0)			        	
-						googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng)); 	
-				}
-				
-				
+			        if(i==0){
+			        	CameraPosition cameraPosition = new CameraPosition.Builder().target(
+			    				latLng).zoom(14).build();
+						googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition)); 	
+			        }
+			        }
+		
 			}		
+		}
+		
+		@Override
+		public void onMapLongClick(LatLng point) {
+	        // TODO Auto-generated method stub
+	        //lstLatLngs.add(point);
+	        
+	        googleMap.addMarker(new MarkerOptions().position(point));
+	    }
+
+		@Override
+		public void onMapClick(LatLng arg0) {
+			// TODO Auto-generated method stub
+			Toast.makeText(this, "Long click to create marker", Toast.LENGTH_SHORT).show();
+			
 		}
 }
